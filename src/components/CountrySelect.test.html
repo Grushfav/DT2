@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CountrySelect Component Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #071327;
+            color: white;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #0FB7A4;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .pass {
+            background: rgba(0, 255, 0, 0.2);
+            border-left: 4px solid #00ff00;
+        }
+        .fail {
+            background: rgba(255, 0, 0, 0.2);
+            border-left: 4px solid #ff0000;
+        }
+        .info {
+            background: rgba(0, 150, 255, 0.2);
+            border-left: 4px solid #0096ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>CountrySelect Component Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: API Response Format</h2>
+        <div id="test1-result" class="test-result info">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Country Display</h2>
+        <div id="test2-result" class="test-result info">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Multiple Selection</h2>
+        <div id="test3-result" class="test-result info">Testing...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Search Functionality</h2>
+        <div id="test4-result" class="test-result info">Testing...</div>
+    </div>
+
+    <script type="module">
+        // Mock fetch for testing
+        const originalFetch = window.fetch;
+        
+        async function testAPIResponse() {
+            const test1Result = document.getElementById('test1-result');
+            
+            try {
+                // Test the actual API
+                const response = await fetch('https://airportsapi.com/api/countries');
+                const data = await response.json();
+                
+                test1Result.innerHTML = `
+                    <strong>API Response Format:</strong><br>
+                    <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                    <br>
+                    <strong>Type:</strong> ${Array.isArray(data) ? 'Array' : typeof data}<br>
+                    <strong>Length:</strong> ${Array.isArray(data) ? data.length : 'N/A'}<br>
+                    <strong>First Item:</strong> ${JSON.stringify(Array.isArray(data) ? data[0] : data)}
+                `;
+                test1Result.className = 'test-result pass';
+            } catch (error) {
+                test1Result.innerHTML = `
+                    <strong>Error:</strong> ${error.message}<br>
+                    <strong>Note:</strong> API might be unavailable or CORS blocked. Using fallback countries.
+                `;
+                test1Result.className = 'test-result fail';
+            }
+        }
+        
+        function testCountryDisplay() {
+            const test2Result = document.getElementById('test2-result');
+            
+            const mockCountries = [
+                { code: 'US', name: 'United States' },
+                { code: 'CA', name: 'Canada' },
+                { code: 'JM', name: 'Jamaica' }
+            ];
+            
+            // Test display value function logic
+            const getDisplayValue = (value, multiple) => {
+                if (!value) return ''
+                if (multiple) {
+                    const selected = Array.isArray(value) ? value : []
+                    return selected.map(c => {
+                        if (typeof c === 'string') return c
+                        if (typeof c === 'object' && c !== null) {
+                            return c.name || c.country_name || c.country || c.code || String(c)
+                        }
+                        return String(c)
+                    }).filter(Boolean).join(', ')
+                }
+                if (typeof value === 'string') return value
+                if (typeof value === 'object' && value !== null) {
+                    return value.name || value.country_name || value.country || value.code || ''
+                }
+                return String(value)
+            };
+            
+            const tests = [
+                { value: null, multiple: false, expected: '' },
+                { value: mockCountries[0], multiple: false, expected: 'United States' },
+                { value: [mockCountries[0], mockCountries[1]], multiple: true, expected: 'United States, Canada' },
+                { value: [], multiple: true, expected: '' }
+            ];
+            
+            let results = '<strong>Display Value Tests:</strong><br>';
+            let allPassed = true;
+            
+            tests.forEach((test, index) => {
+                const result = getDisplayValue(test.value, test.multiple);
+                const passed = result === test.expected;
+                allPassed = allPassed && passed;
+                
+                results += `
+                    Test ${index + 1}: ${passed ? '✓ PASS' : '✗ FAIL'}<br>
+                    &nbsp;&nbsp;Input: ${JSON.stringify(test.value)}<br>
+                    &nbsp;&nbsp;Expected: "${test.expected}"<br>
+                    &nbsp;&nbsp;Got: "${result}"<br><br>
+                `;
+            });
+            
+            test2Result.innerHTML = results;
+            test2Result.className = `test-result ${allPassed ? 'pass' : 'fail'}`;
+        }
+        
+        function testMultipleSelection() {
+            const test3Result = document.getElementById('test3-result');
+            
+            let selectedCountries = [];
+            const mockCountries = [
+                { code: 'US', name: 'United States' },
+                { code: 'CA', name: 'Canada' },
+                { code: 'JM', name: 'Jamaica' }
+            ];
+            
+            const handleSelect = (country) => {
+                const countryCode = country.code || country.country_code || country.iso_code;
+                const isSelected = selectedCountries.some(c => {
+                    if (typeof c === 'string') return false;
+                    const cCode = c.code || c.country_code || c.iso_code;
+                    return cCode === countryCode;
+                });
+                
+                if (isSelected) {
+                    selectedCountries = selectedCountries.filter(c => {
+                        if (typeof c === 'string') return true;
+                        const cCode = c.code || c.country_code || c.iso_code;
+                        return cCode !== countryCode;
+                    });
+                } else {
+                    selectedCountries = [...selectedCountries, country];
+                }
+            };
+            
+            // Simulate selecting countries
+            handleSelect(mockCountries[0]);
+            handleSelect(mockCountries[1]);
+            handleSelect(mockCountries[0]); // Deselect first
+            
+            const result = selectedCountries.length === 1 && selectedCountries[0].code === 'CA';
+            
+            test3Result.innerHTML = `
+                <strong>Multiple Selection Test:</strong><br>
+                Selected: ${JSON.stringify(selectedCountries.map(c => c.name))}<br>
+                Expected: ["Canada"]<br>
+                ${result ? '✓ PASS' : '✗ FAIL'}
+            `;
+            test3Result.className = `test-result ${result ? 'pass' : 'fail'}`;
+        }
+        
+        function testSearch() {
+            const test4Result = document.getElementById('test4-result');
+            
+            const countries = [
+                { code: 'US', name: 'United States' },
+                { code: 'CA', name: 'Canada' },
+                { code: 'JM', name: 'Jamaica' },
+                { code: 'BS', name: 'Bahamas' }
+            ];
+            
+            const filterCountries = (query) => {
+                if (!query) return countries;
+                const q = query.toLowerCase();
+                return countries.filter(country => {
+                    const name = country.name || country.country_name || country.country || '';
+                    const code = country.code || country.country_code || country.iso_code || '';
+                    return name.toLowerCase().includes(q) || code.toLowerCase().includes(q);
+                });
+            };
+            
+            const tests = [
+                { query: '', expected: 4 },
+                { query: 'jam', expected: 1 },
+                { query: 'US', expected: 1 },
+                { query: 'xyz', expected: 0 }
+            ];
+            
+            let results = '<strong>Search Tests:</strong><br>';
+            let allPassed = true;
+            
+            tests.forEach((test, index) => {
+                const result = filterCountries(test.query);
+                const passed = result.length === test.expected;
+                allPassed = allPassed && passed;
+                
+                results += `
+                    Test ${index + 1}: Query "${test.query}" → ${result.length} results ${passed ? '✓' : '✗'}<br>
+                `;
+            });
+            
+            test4Result.innerHTML = results;
+            test4Result.className = `test-result ${allPassed ? 'pass' : 'fail'}`;
+        }
+        
+        // Run all tests
+        testAPIResponse();
+        testCountryDisplay();
+        testMultipleSelection();
+        testSearch();
+    </script>
+</body>
+</html>
+

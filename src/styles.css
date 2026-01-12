@@ -1,0 +1,128 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse 2.6s infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1 }
+    50% { transform: scale(1.06); opacity: 0.9 }
+    100% { transform: scale(1); opacity: 1 }
+  }
+}
+
+/* Basic resets used for the prototype */
+html,body,#root { height: 100%; }
+body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto; background: linear-gradient(180deg,#051023 0%, #071327 60%); color: #e6eef6 }
+
+/* Dark theme overrides for quick prototype (overrides common light utility classes) */
+:root{
+  --surface: #071428;
+  --muted: #94a3b8;
+  --card-shadow: 0 10px 30px rgba(2,6,23,0.6);
+}
+
+/* Make common 'bg-white' used in components into a dark card surface for the prototype */
+.bg-white { background-color: var(--surface) !important; color: #e6eef6 !important }
+
+/* Form headers - ensure they're visible on dark backgrounds */
+form h2, form h3, .form-header {
+  color: #e6eef6 !important;
+}
+.bg-slate-50 { background-color: transparent !important }
+.text-slate-700 { color: var(--muted) !important }
+.text-slate-600 { color: #9fb0c6 !important }
+.text-slate-800 { color: #cfe6ff !important }
+.shadow { box-shadow: var(--card-shadow) !important }
+
+/* Form inputs - ensure they have proper contrast */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+input[type="number"],
+textarea,
+select {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border-color: #0FB7A4 !important;
+}
+
+/* Ensure form labels are visible */
+label {
+  color: #e6eef6 !important;
+}
+
+/* Buttons contrast adjustments */
+.bg-teal { background-color: #0FB7A4 !important }
+.text-navy { color: #051025 !important }
+
+/* Hero decorative blob color tweak for dark */
+.hero-blob {
+  position: absolute; right: -120px; top: 20%; width: 420px; height: 420px; background: radial-gradient(circle at 30% 30%, rgba(15,183,164,0.12), transparent 40%), radial-gradient(circle at 70% 70%, rgba(212,175,55,0.06), transparent 40%); border-radius: 40%; filter: blur(24px); pointer-events: none; z-index: 0;
+}
+
+
+/* Decorative blobs and sidebar polish */
+.hero-blob {
+  position: absolute; right: -120px; top: 20%; width: 420px; height: 420px; background: radial-gradient(circle at 30% 30%, rgba(15,183,164,0.12), transparent 40%), radial-gradient(circle at 70% 70%, rgba(212,175,55,0.06), transparent 40%); border-radius: 40%; filter: blur(24px); pointer-events: none; z-index: 0;
+}
+
+.sidebar-glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  box-shadow: 0 8px 30px rgba(11,29,58,0.12);
+}
+
+@media (max-width: 767px) {
+  .hero-blob { display: none }
+}
+
+/* Crazy deal badge styles */
+.crazy-badge { background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.04); }
+.crazy-badge .badge-left { width: 150px }
+.crazy-badge { animation: pop 2.4s infinite; }
+@keyframes pop { 0% { transform: translateY(0) } 50% { transform: translateY(-6px) scale(1.02) } 100% { transform: translateY(0) } }
+
+@media (max-width: 767px) {
+  .crazy-badge { display: none }
+}
+
+/* Fly list and package code styles */
+.backdrop-blur { backdrop-filter: blur(6px) }
+.text-muted { color: var(--muted) }
+.bg-gold\/10 { background-color: rgba(212,175,55,0.08) }
+.text-gold { color: #D4AF37 }
+.package-code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace }
+
+/* Hide scrollbar for thumbnail navigation */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+

@@ -1,0 +1,3601 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>BT2 Admin Dashboard</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+        background: linear-gradient(135deg, #051023 0%, #071327 100%);
+        color: #e6eef6;
+        padding: 0;
+        min-height: 100vh;
+      }
+      
+      /* Header */
+      .header {
+        background: rgba(15, 183, 164, 0.1);
+        border-bottom: 1px solid rgba(15, 183, 164, 0.2);
+        padding: 20px;
+        margin-bottom: 24px;
+        backdrop-filter: blur(10px);
+      }
+      .header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0FB7A4;
+        margin-bottom: 8px;
+      }
+      .header p {
+        color: #94a3b8;
+        font-size: 14px;
+      }
+      
+      /* Container */
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px 40px;
+      }
+      
+      /* Config Card */
+      .config-card {
+        background: rgba(15, 183, 164, 0.05);
+        border: 1px solid rgba(15, 183, 164, 0.2);
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+      }
+      .config-card label {
+        display: block;
+        font-weight: 600;
+        color: #0FB7A4;
+        margin-bottom: 6px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .config-card .muted {
+        color: #64748b;
+        font-size: 11px;
+        margin-top: 4px;
+      }
+      
+      /* Cards */
+      .card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+      }
+      .card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(15, 183, 164, 0.3);
+      }
+      .card h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #e6eef6;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(15, 183, 164, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .card h3::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: #0FB7A4;
+        border-radius: 2px;
+      }
+      
+      /* Form Elements */
+      label {
+        display: block;
+        font-weight: 500;
+        color: #cfe6ff;
+        margin-bottom: 6px;
+        font-size: 13px;
+      }
+      input, textarea, select {
+        width: 100%;
+        padding: 10px 12px;
+        margin-top: 6px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: #e6eef6;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+      input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #0FB7A4;
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 0 3px rgba(15, 183, 164, 0.1);
+      }
+      input::placeholder, textarea::placeholder {
+        color: #64748b;
+      }
+      
+      /* Buttons */
+      button {
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: none;
+        background: #0FB7A4;
+        color: #051025;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      button:hover {
+        background: #0da693;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 183, 164, 0.3);
+      }
+      button:active {
+        transform: translateY(0);
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: #e6eef6;
+      }
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: white;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+      
+      /* Row Layout */
+      .row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .row > * {
+        flex: 1;
+      }
+      
+      /* List Items */
+      .list-item {
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+      .list-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(15, 183, 164, 0.3);
+        transform: translateX(4px);
+      }
+      .list-item.selected {
+        background: rgba(15, 183, 164, 0.15);
+        border-color: #0FB7A4;
+      }
+      
+      /* Empty States */
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #64748b;
+      }
+      .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+      }
+      .empty-state h4 {
+        color: #94a3b8;
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+      .empty-state p {
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.6;
+      }
+      
+      /* Status Badges */
+      .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .status-pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+      .status-in_progress { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+      .status-on_hold { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+      .status-completed { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+      
+      /* Stats Grid */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .stat-card {
+        background: rgba(15, 183, 164, 0.08);
+        border: 1px solid rgba(15, 183, 164, 0.2);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+      }
+      .stat-card .number {
+        font-size: 32px;
+        font-weight: 700;
+        color: #0FB7A4;
+        margin-bottom: 4px;
+      }
+      .stat-card .label {
+        font-size: 12px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      /* Collapsible Sections */
+      .section-toggle {
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .section-toggle::after {
+        content: '▼';
+        font-size: 12px;
+        transition: transform 0.3s;
+        color: #0FB7A4;
+      }
+      .section-toggle.collapsed::after {
+        transform: rotate(-90deg);
+      }
+      .section-content {
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .section-content.collapsed {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      
+      /* Loading Spinner */
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(15, 183, 164, 0.3);
+        border-top-color: #0FB7A4;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(15, 183, 164, 0.3);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(15, 183, 164, 0.5);
+      }
+      
+      /* Muted Text */
+      .muted {
+        color: #64748b;
+        font-size: 12px;
+      }
+      
+      /* Image Previews */
+      .image-preview {
+        display: inline-block;
+        position: relative;
+        margin: 8px 8px 0 0;
+      }
+      .image-preview img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      /* Button Groups */
+      .btn-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 10px;
+        border-radius: 10px;
+      }
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+      .pill-pending { background: rgba(234,179,8,0.15); color: #facc15; }
+      .pill-approved { background: rgba(34,197,94,0.15); color: #4ade80; }
+      .pill-rejected { background: rgba(239,68,68,0.15); color: #f87171; }
+      .pill-info { background: rgba(59,130,246,0.15); color: #93c5fd; }
+
+      /* Table Styles */
+      .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+      }
+      .users-table thead {
+        background: rgba(15, 183, 164, 0.1);
+        border-bottom: 2px solid rgba(15, 183, 164, 0.3);
+      }
+      .users-table th {
+        padding: 12px;
+        text-align: left;
+        font-size: 12px;
+        font-weight: 700;
+        color: #0FB7A4;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .users-table td {
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: #e6eef6;
+        font-size: 13px;
+      }
+      .users-table tbody tr {
+        transition: background 0.2s;
+      }
+      .users-table tbody tr:hover {
+        background: rgba(15, 183, 164, 0.05);
+      }
+      .users-table tbody tr.selected {
+        background: rgba(15, 183, 164, 0.15);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .badge-admin { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+      .badge-user { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+      .badge-pending { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+      .badge-active { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+      .badge-none { background: rgba(100, 116, 139, 0.2); color: #64748b; }
+
+      /* Tab Navigation - Modern Design */
+      .tab-nav {
+        display: flex;
+        gap: 4px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        padding: 6px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(10px);
+      }
+      .tab-button {
+        flex: 1;
+        padding: 14px 24px;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.65);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .tab-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(15, 183, 164, 0.1) 0%, rgba(15, 183, 164, 0.05) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 8px;
+      }
+      .tab-button:hover {
+        color: rgba(255, 255, 255, 0.9);
+        transform: translateY(-1px);
+      }
+      .tab-button:hover::before {
+        opacity: 1;
+      }
+      .tab-button.active {
+        color: #0FB7A4;
+        background: linear-gradient(135deg, rgba(15, 183, 164, 0.2) 0%, rgba(15, 183, 164, 0.15) 100%);
+        box-shadow: 0 4px 12px rgba(15, 183, 164, 0.2), 
+                    0 0 0 1px rgba(15, 183, 164, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transform: translateY(0);
+      }
+      .tab-button.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40%;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #0FB7A4, transparent);
+        border-radius: 2px 2px 0 0;
+        animation: slideIn 0.3s ease;
+      }
+      @keyframes slideIn {
+        from {
+          width: 0;
+          opacity: 0;
+        }
+        to {
+          width: 40%;
+          opacity: 1;
+        }
+      }
+      .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Toasts */
+      .toast-container {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .toast {
+        min-width: 260px;
+        background: rgba(15, 183, 164, 0.12);
+        border: 1px solid rgba(15, 183, 164, 0.4);
+        color: #e6eef6;
+        padding: 12px 14px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: fadein 0.2s ease, fadeout 0.2s ease 3.8s forwards;
+      }
+      .toast.error {
+        background: rgba(239,68,68,0.12);
+        border-color: rgba(239,68,68,0.5);
+      }
+      @keyframes fadein { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+      @keyframes fadeout { to { opacity: 0; transform: translateY(6px);} }
+
+      /* Confirm modal */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9998;
+      }
+      .modal {
+        background: #0b152b;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: 20px;
+        width: min(420px, 90vw);
+        box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+      }
+      .modal h4 { margin-bottom: 10px; color: #0FB7A4; }
+      .modal p { margin-bottom: 16px; color: #cbd5e1; }
+
+      /* Layout */
+      .layout {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+      }
+      .admin-nav {
+        position: sticky;
+        top: 16px;
+        width: 240px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      }
+      .admin-nav h4 {
+        margin-bottom: 12px;
+        font-size: 16px;
+        color: #0FB7A4;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-link {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.06);
+        color: #e6eef6;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 10px 12px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .nav-link:hover {
+        background: rgba(15, 183, 164, 0.15);
+        border-color: rgba(15, 183, 164, 0.4);
+        transform: translateX(2px);
+      }
+      .nav-link .tag {
+        background: rgba(255,255,255,0.08);
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        color: #94a3b8;
+      }
+      .main-content {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      /* Responsive */
+      @media (max-width: 768px) {
+        .row {
+          flex-direction: column;
+        }
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+        .layout {
+          flex-direction: column;
+        }
+        .admin-nav {
+          position: relative;
+          width: 100%;
+        }
+      }
+
+      /* Chat Sidebar */
+      .chat-sidebar {
+        position: fixed;
+        right: 0;
+        top: 0;
+        height: 100vh;
+        width: 384px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+      }
+      .chat-sidebar.collapsed {
+        width: 64px;
+      }
+      .chat-sidebar-header {
+        background: rgba(15, 183, 164, 0.2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .chat-sidebar-tabs {
+        display: flex;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .chat-sidebar-tab {
+        flex: 1;
+        padding: 12px;
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+        position: relative;
+      }
+      .chat-sidebar-tab.active {
+        background: rgba(15, 183, 164, 0.2);
+        color: #0FB7A4;
+        border-bottom: 2px solid #0FB7A4;
+      }
+      .chat-sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+      }
+      .chat-conversation-item {
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .chat-conversation-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(15, 183, 164, 0.3);
+      }
+      .chat-message {
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        max-width: 80%;
+        word-wrap: break-word;
+      }
+      .chat-message.admin {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #e6eef6;
+      }
+       .chat-message.user {
+         background: #0FB7A4;
+         color: #051025;
+         margin-left: 0;
+       }
+      .chat-quick-replies {
+        padding: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .quick-reply-btn {
+        font-size: 11px;
+        padding: 4px 8px;
+        margin: 4px 4px 4px 0;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #e6eef6;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .quick-reply-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .chat-input-area {
+        padding: 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .chat-input-form {
+        display: flex;
+        gap: 8px;
+      }
+      .chat-input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: #e6eef6;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+      .chat-input::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .chat-collapsed {
+        width: 64px;
+        padding: 16px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .unread-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: #ef4444;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h1>🎯 BT2 Admin Dashboard</h1>
+          <p>Manage packages, requests, trips, and more</p>
+        </div>
+        <button onclick="handleLogout()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='rgba(239, 68, 68, 0.3)'; this.style.borderColor='rgba(239, 68, 68, 0.6)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='rgba(239, 68, 68, 0.4)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Logout
+        </button>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div class="layout">
+        <aside class="admin-nav">
+          <h4>📂 Quick Navigation</h4>
+          <button class="nav-link" onclick="jumpTo('statsGrid')">Overview <span class="tag">Stats</span></button>
+          <button class="nav-link" onclick="jumpTo('section-requests')">Requests <span class="tag">Leads</span></button>
+          <button class="nav-link" onclick="jumpTo('section-testimonials')">Testimonials <span class="tag">Reviews</span></button>
+          <button class="nav-link" onclick="jumpTo('section-users')">Users <span class="tag">Accounts</span></button>
+          <button class="nav-link" onclick="jumpTo('section-content-management')">Content Management <span class="tag">Packages/Trips/Deals</span></button>
+          <button class="nav-link" onclick="jumpTo('section-chat')">Live Chat <span class="tag">Support</span></button>
+          <button class="nav-link" onclick="jumpTo('section-crazy-deals')">Crazy Deals <span class="tag">Promo</span></button>
+          <button class="nav-link" onclick="jumpTo('section-destinations')">Destinations <span class="tag">Fly List</span></button>
+        </aside>
+        <div class="main-content">
+          <!-- Stats Overview -->
+          <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+              <div class="number" id="statPackages">-</div>
+              <div class="label">Packages</div>
+            </div>
+            <div class="stat-card">
+              <div class="number" id="statRequests">-</div>
+              <div class="label">Requests</div>
+            </div>
+            <div class="stat-card">
+              <div class="number" id="statTrips">-</div>
+              <div class="label">Travel Trips</div>
+            </div>
+            <div class="stat-card">
+              <div class="number" id="statChatSessions">-</div>
+              <div class="label">Chat Sessions</div>
+            </div>
+            <div class="stat-card">
+              <div class="number" id="testimonialsCount">-</div>
+              <div class="label">Testimonials</div>
+            </div>
+          </div>
+
+          <!-- Requests & Submissions Management -->
+          <div class="card" id="section-requests">
+        <h3 class="section-toggle" onclick="toggleSection('requestsSection')">
+          <span>📋 Requests & Submissions</span>
+        </h3>
+        <div id="requestsSection" class="section-content">
+          <div style="margin-bottom: 12px;">
+            <label>Filter by Status</label>
+            <select id="requestStatusFilter" style="margin-top: 4px;" onchange="fetchRequests()">
+              <option value="">All Requests</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="on_hold">On Hold</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div id="requestsList" style="max-height: 500px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
+            <div class="empty-state">
+              <div class="spinner"></div>
+              <p style="margin-top: 12px;">Loading requests...</p>
+            </div>
+          </div>
+          <div id="requestDetails" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; display: none; border: 1px solid rgba(15, 183, 164, 0.2);">
+            <h4 style="margin-top: 0; margin-bottom: 16px; color: #0FB7A4; font-size: 16px;">Request Details</h4>
+            <div id="requestDetailsContent"></div>
+            <div style="margin-top: 16px;">
+              <label>Status</label>
+              <select id="requestStatusUpdate" style="margin-top: 4px;">
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="on_hold">On Hold</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+            <div style="margin-top: 12px;">
+              <label>Admin Notes</label>
+              <textarea id="requestAdminNotes" rows="3" style="margin-top: 4px;" placeholder="Add notes about this request..."></textarea>
+            </div>
+            <div style="margin-top: 16px; padding: 12px; background: rgba(15, 183, 164, 0.1); border-radius: 8px; border: 1px solid rgba(15, 183, 164, 0.3);">
+              <h5 style="margin-top: 0; margin-bottom: 12px; color: #0FB7A4; font-size: 14px;">💳 Payment Management</h5>
+              <div style="margin-bottom: 12px;">
+                <label>Payment Status</label>
+                <select id="requestPaymentStatus" style="margin-top: 4px;">
+                  <option value="pending">Pending</option>
+                  <option value="awaiting_payment">Awaiting Payment</option>
+                  <option value="payment_received">Payment Received (User Claimed)</option>
+                  <option value="payment_confirmed">Payment Confirmed</option>
+                  <option value="no_payment_required">No Payment Required</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label>Payment Amount</label>
+                <input type="text" id="paymentAmount" placeholder="e.g. 500.00" style="margin-top: 4px;" />
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label>Currency</label>
+                <select id="paymentCurrency" style="margin-top: 4px;">
+                  <option value="USD">USD</option>
+                  <option value="JMD">JMD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="GBP">GBP</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label>Payment Method</label>
+                <select id="paymentMethod" style="margin-top: 4px;">
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="credit_card">Credit Card</option>
+                  <option value="cash">Cash</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label>Bank Name</label>
+                <input type="text" id="paymentBankName" placeholder="e.g. Bank of Jamaica" style="margin-top: 4px;" />
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label>Account Name</label>
+                <input type="text" id="paymentAccountName" placeholder="e.g. BT2 Horizon" style="margin-top: 4px;" />
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label>Account Number</label>
+                <input type="text" id="paymentAccountNumber" placeholder="Account number" style="margin-top: 4px;" />
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label>Payment Instructions</label>
+                <textarea id="paymentInstructions" rows="3" style="margin-top: 4px;" placeholder="Special instructions for payment..."></textarea>
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label>Due Date</label>
+                <input type="date" id="paymentDueDate" style="margin-top: 4px;" />
+              </div>
+              <div class="btn-group" style="margin-top: 12px;">
+                <button id="updatePaymentInfo" class="btn-secondary">💾 Update Payment Info</button>
+                <button id="confirmPayment" style="background: #10b981; color: white;">✅ Confirm Payment Received</button>
+              </div>
+            </div>
+            <div class="btn-group" style="margin-top: 16px;">
+              <button id="updateRequestStatus">💾 Update Status</button>
+              <button class="btn-secondary" id="cancelRequestEdit" onclick="document.getElementById('requestDetails').style.display='none'">Cancel</button>
+            </div>
+          </div>
+          <div class="btn-group">
+            <button id="refreshRequests">🔄 Refresh Requests</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonials Management -->
+      <div class="card" id="section-testimonials">
+        <h3 class="section-toggle" onclick="toggleSection('testimonialsSection')">
+          <span>⭐ Testimonials</span>
+        </h3>
+        <div id="testimonialsSection" class="section-content collapsed">
+          <div class="toolbar">
+            <div style="flex:1; min-width: 200px;">
+              <label>Search</label>
+              <input id="testimonialSearch" placeholder="Search by name, email, text..." oninput="fetchTestimonials()" />
+            </div>
+            <div style="width: 200px;">
+              <label>Status</label>
+              <select id="testimonialStatusFilter" style="margin-top: 4px;" onchange="fetchTestimonials()">
+                <option value="">All</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div class="btn-group" style="margin-top: 0;">
+              <button id="refreshTestimonials" class="btn-secondary">🔄 Refresh</button>
+            </div>
+          </div>
+          <div id="testimonialsList" style="max-height: 500px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
+            <div class="empty-state">
+              <div class="spinner"></div>
+              <p style="margin-top: 12px;">Loading testimonials...</p>
+            </div>
+          </div>
+          <div id="testimonialDetails" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; display: none; border: 1px solid rgba(15, 183, 164, 0.2);">
+            <h4 style="margin-top: 0; margin-bottom: 16px; color: #0FB7A4; font-size: 16px;">Testimonial Details</h4>
+            <div id="testimonialDetailsContent"></div>
+            <div style="margin-top: 16px;">
+              <label>Status</label>
+              <select id="testimonialStatusUpdate" style="margin-top: 4px;">
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div style="margin-top: 12px;">
+              <label>Admin Notes</label>
+              <textarea id="testimonialAdminNotes" rows="3" style="margin-top: 4px;" placeholder="Add notes about this testimonial..."></textarea>
+            </div>
+            <div class="btn-group" style="margin-top: 16px;">
+              <button id="updateTestimonialStatus">💾 Update Status</button>
+              <button id="approveTestimonial" style="background: #10b981; color: white;">✅ Approve</button>
+              <button id="rejectTestimonial" style="background: #ef4444; color: white;">❌ Reject</button>
+              <button id="deleteTestimonial" class="btn-danger">🗑️ Delete</button>
+              <button class="btn-secondary" id="cancelTestimonialEdit" onclick="document.getElementById('testimonialDetails').style.display='none'">Cancel</button>
+            </div>
+          </div>
+          <div class="toolbar">
+            <div class="btn-group" style="margin-top:0">
+              <button id="updateTestimonialStatus">💾 Update Status</button>
+              <button id="approveTestimonial" style="background: #10b981; color: white;">✅ Approve</button>
+              <button id="rejectTestimonial" style="background: #ef4444; color: white;">❌ Reject</button>
+              <button id="deleteTestimonial" class="btn-danger">🗑️ Delete</button>
+              <button class="btn-secondary" id="cancelTestimonialEdit" onclick="document.getElementById('testimonialDetails').style.display='none'">Cancel</button>
+              <button id="refreshTestimonials" class="btn-secondary">🔄 Refresh</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Management -->
+      <div class="card" id="section-users">
+        <h3 class="section-toggle" onclick="toggleSection('usersSection')">
+          <span>👥 User Management</span>
+        </h3>
+        <div id="usersSection" class="section-content collapsed">
+          <div style="margin-bottom: 12px;">
+            <label>Search/Filter Users</label>
+            <input 
+              type="text" 
+              id="userSearchFilter" 
+              placeholder="Search by first name, last name, email, or phone..." 
+              style="margin-top: 4px; width: 100%;"
+              oninput="fetchUsers()"
+            />
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label>Filter by Field</label>
+            <select id="userFieldFilter" style="margin-top: 4px;" onchange="fetchUsers()">
+              <option value="">All Fields</option>
+              <option value="first_name">First Name</option>
+              <option value="last_name">Last Name</option>
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+            </select>
+          </div>
+          <div id="usersList" style="max-height: 600px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
+            <div class="empty-state">
+              <div class="spinner"></div>
+              <p style="margin-top: 12px;">Loading users...</p>
+            </div>
+          </div>
+          <div id="userDetails" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; display: none; border: 1px solid rgba(15, 183, 164, 0.2);">
+            <h4 style="margin-top: 0; margin-bottom: 16px; color: #0FB7A4; font-size: 16px;">User Details</h4>
+            <div id="userDetailsContent"></div>
+            <div class="btn-group" style="margin-top: 16px;">
+              <button class="btn-secondary" id="cancelUserView" onclick="document.getElementById('userDetails').style.display='none'">Close</button>
+            </div>
+          </div>
+          <div class="btn-group">
+            <button id="refreshUsers">🔄 Refresh Users</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Management (Packages, Travel Buddy, Get away!) -->
+      <div class="card" id="section-content-management">
+        <h3 class="section-toggle" onclick="toggleSection('contentManagementSection')">
+          <span>📦 Content Management</span>
+        </h3>
+        <div id="contentManagementSection" class="section-content">
+          <!-- Tab Navigation -->
+          <div class="tab-nav">
+            <button class="tab-button active" onclick="switchContentTab('packages', event)">📦 Feature Packages</button>
+            <button class="tab-button" onclick="switchContentTab('trips', event)">✈️ Travel Buddy</button>
+            <button class="tab-button" onclick="switchContentTab('calendar', event)">🌴 Get away!</button>
+          </div>
+
+          <!-- Packages Tab -->
+          <div id="tab-packages" class="tab-content active">
+            <div class="row">
+              <input id="pkgCode" placeholder="Code e.g. BT2-GRE-01" />
+              <input id="pkgTitle" placeholder="Title" />
+            </div>
+            <div class="row">
+              <input id="pkgNights" type="number" placeholder="Nights" />
+              <input id="pkgPrice" placeholder="Price" />
+            </div>
+            <label style="margin-top: 12px; display: block;">Trip Details</label>
+            <textarea id="pkgTripDetails" rows="6" placeholder="Enter detailed trip information: itinerary, inclusions, exclusions, important notes, etc." style="margin-top: 6px; width: 100%; resize: vertical;"></textarea>
+            <label style="margin-top: 12px; display: block;">Package Images (minimum 1, recommended 7+)</label>
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+              <input type="file" id="pkgImages" accept="image/*" multiple style="flex: 1;" />
+              <button type="button" id="addMoreImages" class="btn-secondary">➕ Add More</button>
+            </div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 6px;">💡 Tip: Hold Ctrl (Windows) or Cmd (Mac) to select multiple files at once</div>
+            <div id="pkgImagePreview" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
+            <div id="pkgCurrentImages" style="margin-top: 12px;"></div>
+            <div class="btn-group">
+              <button id="createPkg">✨ Create</button>
+              <button id="updatePkg" class="btn-secondary">✏️ Update Selected</button>
+              <button id="deletePkg" class="btn-danger">🗑️ Delete Selected</button>
+              <button id="refreshPkgs" class="btn-secondary">🔄 Refresh</button>
+            </div>
+            <div id="packagesList" style="margin-top: 16px;"></div>
+          </div>
+
+          <!-- Travel Buddy Tab -->
+          <div id="tab-trips" class="tab-content">
+            <div class="row">
+              <input id="tripTitle" placeholder="Trip Title" />
+              <input id="tripDestination" placeholder="Destination" />
+            </div>
+            <div class="row">
+              <input id="tripCountry" placeholder="Country" />
+              <input id="tripPrice" placeholder="Price per person" />
+            </div>
+            <div class="row">
+              <input type="date" id="tripStartDate" placeholder="Start Date" />
+              <input type="date" id="tripEndDate" placeholder="End Date" />
+            </div>
+            <div class="row">
+              <input type="number" id="tripMaxParticipants" placeholder="Max Participants" value="10" />
+            </div>
+            <label style="margin-top: 12px; display: block;">Trip Images (minimum 1, recommended 3+)</label>
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+              <input type="file" id="tripImages" accept="image/*" multiple style="flex: 1;" />
+              <button type="button" id="addMoreTripImages" class="btn-secondary">➕ Add More</button>
+            </div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 6px;">💡 Tip: Hold Ctrl (Windows) or Cmd (Mac) to select multiple files at once</div>
+            <div id="tripImagePreview" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
+            <div id="tripCurrentImages" style="margin-top: 12px;"></div>
+            <textarea id="tripDescription" placeholder="Description" rows="3" style="margin-top: 12px;"></textarea>
+            <textarea id="tripRequirements" placeholder="Requirements (age, fitness, etc.)" rows="2" style="margin-top: 12px;"></textarea>
+            <label style="margin-top: 12px; display: block;">Itinerary (one per line, format: Day X - Activity)</label>
+            <textarea id="tripItinerary" placeholder="Day 1 - Arrival and welcome dinner&#10;Day 2 - City tour&#10;Day 3 - Beach day" rows="5" style="margin-top: 6px;"></textarea>
+            <label style="margin-top: 12px; display: block;">What's Included (one per line)</label>
+            <textarea id="tripIncluded" placeholder="Accommodation&#10;Breakfast&#10;Airport transfers" rows="4" style="margin-top: 6px;"></textarea>
+            <div class="btn-group">
+              <button id="createTrip">✨ Create Trip</button>
+              <button id="updateTrip" class="btn-secondary">✏️ Update Selected</button>
+              <button id="deleteTrip" class="btn-danger">🗑️ Delete Selected</button>
+              <button id="refreshTrips" class="btn-secondary">🔄 Refresh</button>
+            </div>
+            <div id="tripsList" style="margin-top: 16px;"></div>
+          </div>
+
+          <!-- Get away! (Calendar Deals) Tab -->
+          <div id="tab-calendar" class="tab-content">
+            <div class="row">
+              <input type="date" id="dealDate" placeholder="Select Date" />
+              <select id="dealType">
+                <option value="">Select Deal Type</option>
+                <option value="flight">Flight</option>
+                <option value="hotel">Hotel</option>
+                <option value="package">Package</option>
+                <option value="visa">Visa Deal</option>
+              </select>
+            </div>
+            <input id="dealTitle" placeholder="Title (optional)" style="margin-top: 12px;" />
+            <textarea id="dealDescription" placeholder="Description (optional)" rows="2" style="margin-top: 12px;"></textarea>
+            <div class="row" style="margin-top: 12px;">
+              <input type="number" id="dealDiscount" placeholder="Discount % (optional)" />
+              <label style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                <input type="checkbox" id="dealActive" checked />
+                <span>Active</span>
+              </label>
+            </div>
+            <div class="btn-group">
+              <button id="saveDeal">💾 Save Deal</button>
+              <button id="deleteDeal" class="btn-danger">🗑️ Delete Selected</button>
+              <button id="refreshDeals" class="btn-secondary">🔄 Refresh</button>
+            </div>
+            <div id="dealsList" style="margin-top: 16px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Chat Management -->
+      <div class="card" id="section-chat">
+        <h3 class="section-toggle" onclick="toggleSection('chatSection')">
+          <span>💬 Live Chat Management</span>
+        </h3>
+        <div id="chatSection" class="section-content collapsed">
+          <div style="margin-bottom: 12px;">
+            <label>Select Chat Session</label>
+            <select id="chatSessionSelect" style="margin-top: 4px;" onchange="loadChatSession()">
+              <option value="">-- Select a session --</option>
+            </select>
+          </div>
+          <div id="chatMessagesList" style="max-height: 400px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
+            <div class="empty-state">
+              <div class="empty-state-icon">💬</div>
+              <h4>No session selected</h4>
+              <p>Select a chat session from the dropdown above</p>
+            </div>
+          </div>
+          <div class="row">
+            <input id="adminReplyMessage" placeholder="Type your reply..." />
+            <button id="sendAdminReply">📤 Send Reply</button>
+          </div>
+          <div class="btn-group">
+            <button id="refreshChatSessions" class="btn-secondary">🔄 Refresh Sessions</button>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- Crazy Deals -->
+      <div class="card" id="section-crazy-deals">
+        <h3 class="section-toggle" onclick="toggleSection('crazyDealsSection')">
+          <span>🔥 Crazy Deals</span>
+        </h3>
+        <div id="crazyDealsSection" class="section-content collapsed">
+          <input id="dealTitle" placeholder="Title (e.g. Santorini)" />
+          <input id="dealSubtitle" placeholder="Subtitle (e.g. Limited seats • Book now)" style="margin-top: 12px;" />
+          <div class="row" style="margin-top: 12px;">
+            <input id="dealDiscount" type="number" placeholder="Discount % (e.g. 40)" />
+            <input id="dealEndDate" type="datetime-local" placeholder="End Date" />
+          </div>
+          <label style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+            <input id="dealActive" type="checkbox" checked />
+            <span>Active</span>
+          </label>
+          <div class="btn-group">
+            <button id="createDeal">✨ Create Deal</button>
+            <button id="updateDeal" class="btn-secondary">✏️ Update Selected</button>
+            <button id="deleteDeal" class="btn-danger">🗑️ Delete Selected</button>
+            <button id="refreshDeals" class="btn-secondary">🔄 Refresh</button>
+          </div>
+          <div id="dealsList" style="margin-top: 16px;"></div>
+        </div>
+      </div>
+
+      <!-- Affordable Destinations -->
+      <div class="card" id="section-destinations">
+        <h3 class="section-toggle" onclick="toggleSection('destinationsSection')">
+          <span>🌍 Affordable Destinations</span>
+        </h3>
+        <div id="destinationsSection" class="section-content collapsed">
+          <div class="toolbar">
+            <div style="flex:1; min-width: 200px;">
+              <label>Search</label>
+              <input id="destSearch" placeholder="Search by country or city..." oninput="fetchDestinations()" />
+            </div>
+            <div style="width: 180px;">
+              <label>Status</label>
+              <select id="destStatusFilter" style="margin-top:4px;" onchange="fetchDestinations()">
+                <option value="">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="btn-group" style="margin-top:0">
+              <button id="refreshDests" class="btn-secondary">🔄 Refresh</button>
+            </div>
+          </div>
+          <div class="row">
+            <input id="destCountry" placeholder="Country" />
+            <input id="destCity" placeholder="City" />
+          </div>
+          <div class="row" style="margin-top: 12px;">
+            <input id="destPrice" placeholder="Price (e.g. $399)" />
+            <input id="destOrder" type="number" placeholder="Display Order" />
+          </div>
+          <label style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+            <input id="destActive" type="checkbox" checked />
+            <span>Active</span>
+          </label>
+          <div class="toolbar">
+            <div class="btn-group" style="margin-top:0">
+              <button id="createDest">✨ Create Destination</button>
+              <button id="updateDest" class="btn-secondary">✏️ Update Selected</button>
+              <button id="deleteDest" class="btn-danger">🗑️ Delete Selected</button>
+            </div>
+          </div>
+          <div id="destsList" style="margin-top: 16px;"></div>
+        </div>
+      </div>
+
+
+        </div><!-- /main-content -->
+      </div><!-- /layout -->
+    </div><!-- /container -->
+
+    <!-- Chat Sidebar -->
+    <div id="chatSidebar" class="chat-sidebar">
+      <!-- Collapsed State -->
+      <div id="chatCollapsed" class="chat-collapsed" style="display: none;">
+        <button onclick="toggleChatSidebar()" style="background: rgba(15, 183, 164, 0.2); padding: 8px; border-radius: 8px; border: none; cursor: pointer;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0FB7A4" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </button>
+        <div id="chatUnreadCollapsed" style="position: relative; display: none;">
+          <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></div>
+          <span id="chatUnreadCountCollapsed" class="unread-badge" style="display: none;">0</span>
+        </div>
+        <div style="writing-mode: vertical-rl; text-orientation: mixed; font-size: 11px; color: rgba(255,255,255,0.6); margin-top: auto; margin-bottom: 16px;">
+          Live Chat
+        </div>
+      </div>
+
+      <!-- Expanded State -->
+      <div id="chatExpanded">
+        <div class="chat-sidebar-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; background: rgba(15, 183, 164, 0.3); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0FB7A4" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 style="font-size: 16px; font-weight: 600; color: #e6eef6; margin: 0;">Live Chat</h3>
+              <p style="font-size: 11px; color: rgba(255,255,255,0.7); margin: 0;">Support & Assistance</p>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div id="chatUnreadExpanded" style="position: relative; display: none;">
+              <div style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 2s infinite;"></div>
+              <span id="chatUnreadCountExpanded" class="unread-badge" style="display: none;">0</span>
+            </div>
+            <button onclick="toggleChatSidebar()" style="background: transparent; border: none; color: rgba(255,255,255,0.7); cursor: pointer; padding: 4px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-sidebar-tabs">
+          <button class="chat-sidebar-tab" id="chatTabConversations" onclick="switchChatTab('conversations')">Conversations</button>
+          <button class="chat-sidebar-tab active" id="chatTabChat" onclick="switchChatTab('chat')">Chat <span id="chatTabBadge" style="display: none; background: #ef4444; color: white; border-radius: 10px; padding: 2px 6px; font-size: 10px; margin-left: 4px;">0</span></button>
+        </div>
+
+        <!-- Conversations View -->
+        <div id="chatConversationsView" class="chat-sidebar-content" style="display: none;">
+          <div style="font-size: 11px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">Active Conversations</div>
+          <div id="chatConversationsList"></div>
+        </div>
+
+        <!-- Chat View -->
+        <div id="chatChatView" class="chat-sidebar-content">
+          <div id="chatMessages" style="min-height: 200px; max-height: calc(100vh - 400px); overflow-y: auto;"></div>
+        </div>
+
+        <!-- Quick Replies -->
+        <div class="chat-quick-replies">
+          <div style="font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 8px;">Quick Replies:</div>
+          <div id="chatQuickReplies"></div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+          <form id="chatInputForm" onsubmit="sendChatMessage(event)" class="chat-input-form">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Type your message..." />
+            <button type="submit" style="background: #0FB7A4; color: #051025; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer;">Send</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function $(id){return document.getElementById(id)}
+      // Auto-detect API base URL - admin.html is served from the backend, so use current origin
+      function getApiBase() {
+        // Admin.html is served from the backend server, so current origin is the API base
+        return window.location.origin
+      }
+      function apiUrl(path){
+        const base = getApiBase()
+        return base.replace(/\/$/,'') + path
+      }
+      function headers(includeContentType = true){ 
+        const token = localStorage.getItem('auth_token')
+        const headersObj = {}
+        // Set Content-Type only if requested (not for FormData uploads)
+        if (includeContentType) {
+          headersObj['Content-Type'] = 'application/json'
+        }
+        // Always use JWT token if available (admins login from main app)
+        if (token) {
+          headersObj['Authorization'] = `Bearer ${token}`
+        } else {
+          // Fallback: try to use admin key from localStorage (for backward compatibility)
+          const adminKey = localStorage.getItem('admin_key') || 'secret-admin-key'
+          headersObj['x-admin-key'] = adminKey
+        }
+        return headersObj
+      }
+      function jumpTo(id){
+        const el = document.getElementById(id)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }
+
+      // Toggle section collapse
+      function toggleSection(sectionId) {
+        const section = $(sectionId)
+        const toggle = section.previousElementSibling
+        section.classList.toggle('collapsed')
+        toggle.classList.toggle('collapsed')
+      }
+
+      function switchContentTab(tabName, event) {
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(tab => {
+          tab.classList.remove('active')
+        })
+        // Remove active class from all tab buttons
+        document.querySelectorAll('.tab-button').forEach(btn => {
+          btn.classList.remove('active')
+        })
+        // Show selected tab content
+        $(`tab-${tabName}`).classList.add('active')
+        // Activate selected tab button
+        if (event && event.target) {
+          event.target.classList.add('active')
+        } else {
+          // Find the button by tab name
+          document.querySelectorAll('.tab-button').forEach(btn => {
+            if (btn.textContent.includes(tabName === 'packages' ? 'Packages' : tabName === 'trips' ? 'Travel Buddy' : 'Get away')) {
+              btn.classList.add('active')
+            }
+          })
+        }
+      }
+      window.switchContentTab = switchContentTab
+
+      // Update stats
+      async function updateStats() {
+        try {
+          // Packages count
+          const pkgsRes = await fetch(apiUrl('/api/packages'))
+          if (pkgsRes.ok) {
+            const pkgs = await pkgsRes.json()
+            $('statPackages').textContent = pkgs.length || 0
+          }
+          
+          // Requests count
+          const reqRes = await fetch(apiUrl('/api/requests'), { headers: headers() })
+          if (reqRes.ok) {
+            const reqs = await reqRes.json()
+            $('statRequests').textContent = reqs.length || 0
+          }
+          
+          // Trips count
+          const tripsRes = await fetch(apiUrl('/api/travel-trips'), { headers: headers() })
+          if (tripsRes.ok) {
+            const trips = await tripsRes.json()
+            $('statTrips').textContent = trips.length || 0
+          }
+          
+          // Chat sessions count
+          const chatRes = await fetch(apiUrl('/api/chat/messages'), { headers: headers() })
+          if (chatRes.ok) {
+            const messages = await chatRes.json()
+            const sessions = new Set(messages.map(m => m.session_id))
+            $('statChatSessions').textContent = sessions.size || 0
+          }
+          
+          // Testimonials count
+          const testimonialsRes = await fetch(apiUrl('/api/testimonials/all'), { headers: headers() })
+          if (testimonialsRes.ok) {
+            const testimonials = await testimonialsRes.json()
+            $('testimonialsCount').textContent = testimonials.length || 0
+          }
+        } catch (err) {
+          console.error('Failed to update stats:', err)
+        }
+      }
+
+      async function fetchPackages(){
+        try {
+          const res = await fetch(apiUrl('/api/packages'))
+          if (!res.ok) throw new Error('Failed to fetch packages')
+          const data = await res.json()
+          const list = $('packagesList')
+          list.innerHTML = ''
+          if (data.length === 0) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><h4>No packages found</h4><p>Create your first package to get started</p></div>'
+            return
+          }
+          data.forEach(p=>{
+            const div = document.createElement('div')
+            div.className = 'list-item'
+            const imgCount = Array.isArray(p.images) ? p.images.length : (p.img ? 1 : 0)
+            div.innerHTML = `
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <strong style="color: #e6eef6;">${p.code}</strong> — ${p.title}
+                  <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
+                    ${p.nights} nights • ${p.price} • ${imgCount} image${imgCount !== 1 ? 's' : ''}
+                  </div>
+                </div>
+              </div>
+            `
+            div.onclick = ()=> selectPackage(p)
+            if (selectedPackage && selectedPackage.id === p.id) {
+              div.classList.add('selected')
+            }
+            list.appendChild(div)
+          })
+          updateStats()
+        } catch (err) {
+          $('packagesList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
+        }
+      }
+
+      let selectedPackage = null
+      let packageImageFiles = []
+      
+      function selectPackage(p){
+        selectedPackage = p
+        $('pkgCode').value = p.code||''
+        $('pkgTitle').value = p.title||''
+        $('pkgNights').value = p.nights||''
+        $('pkgPrice').value = p.price||''
+        $('pkgTripDetails').value = p.trip_details||''
+        packageImageFiles = []
+        $('pkgImages').value = ''
+        updateImagePreview()
+        
+        // Show current images
+        const currentImages = Array.isArray(p.images) ? p.images : (p.img ? [p.img] : [])
+        const currentDiv = $('pkgCurrentImages')
+        if(currentImages.length > 0) {
+          currentDiv.innerHTML = '<div style="font-size:12px;color:#94a3b8;margin-bottom:8px">Current images:</div>' +
+            currentImages.map((url, i) => 
+              `<div class="image-preview">
+                <img src="${url}" />
+                <button onclick="removeCurrentImage(${i})" style="position:absolute;top:0;right:0;background:red;border:none;color:white;width:20px;height:20px;border-radius:2px;cursor:pointer;font-size:12px;line-height:1">×</button>
+              </div>`
+            ).join('')
+        } else {
+          currentDiv.innerHTML = ''
+        }
+        fetchPackages()
+      }
+      
+      $('pkgImages').onchange = function(e) {
+        const newFiles = Array.from(e.target.files)
+        if(newFiles.length < 1) return
+        const existingNames = packageImageFiles.map(f => f.name)
+        const uniqueNewFiles = newFiles.filter(f => !existingNames.includes(f.name))
+        packageImageFiles = [...packageImageFiles, ...uniqueNewFiles]
+        updateImagePreview()
+        e.target.value = ''
+      }
+      
+      $('addMoreImages').onclick = function() {
+        $('pkgImages').click()
+      }
+      
+      function updateImagePreview() {
+        const preview = $('pkgImagePreview')
+        preview.innerHTML = ''
+        if(packageImageFiles.length === 0) {
+          preview.innerHTML = '<div style="color:#64748b;font-size:12px">No images selected</div>'
+          return
+        }
+        packageImageFiles.forEach((file, i) => {
+          const reader = new FileReader()
+          reader.onload = function(e) {
+            const div = document.createElement('div')
+            div.className = 'image-preview'
+            div.innerHTML = `
+              <img src="${e.target.result}" />
+              <button onclick="removeImagePreview(${i})" style="position:absolute;top:0;right:0;background:red;border:none;color:white;width:20px;height:20px;border-radius:2px;cursor:pointer;font-size:12px;line-height:1">×</button>
+              <div style="font-size:10px;color:#64748b;margin-top:4px;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${file.name}</div>
+            `
+            preview.appendChild(div)
+          }
+          reader.readAsDataURL(file)
+        })
+      }
+      
+      window.removeImagePreview = function(index) {
+        packageImageFiles.splice(index, 1)
+        updateImagePreview()
+      }
+      
+      window.removeCurrentImage = function(index) {
+        if(!selectedPackage) return
+        const currentImages = Array.isArray(selectedPackage.images) ? selectedPackage.images : (selectedPackage.img ? [selectedPackage.img] : [])
+        currentImages.splice(index, 1)
+        selectedPackage.images = currentImages
+        selectPackage(selectedPackage)
+      }
+      
+      async function uploadPackageImages() {
+        if(packageImageFiles.length === 0) return []
+        const uploadedUrls = []
+        for(const file of packageImageFiles) {
+          const formData = new FormData()
+          formData.append('image', file)
+          formData.append('bucket', 'images')
+          formData.append('folder', 'packages')
+          // For FormData, don't set Content-Type (browser will set it with boundary)
+          const uploadHeaders = {}
+          const token = localStorage.getItem('auth_token')
+          if (token) {
+            uploadHeaders['Authorization'] = `Bearer ${token}`
+          } else {
+            uploadHeaders['x-admin-key'] = localStorage.getItem('admin_key') || 'secret-admin-key'
+          }
+          const res = await fetch(apiUrl('/api/upload'), {
+            method: 'POST',
+            headers: uploadHeaders,
+            body: formData
+          })
+          if(res.ok) {
+            const data = await res.json()
+            uploadedUrls.push(data.url)
+          } else {
+            alert('Failed to upload image: ' + file.name)
+          }
+        }
+        return uploadedUrls
+      }
+
+      $('createPkg').onclick = async ()=>{
+        if(packageImageFiles.length === 0) {
+          return alert('Please upload at least 1 image (recommended 7+)')
+        }
+        const uploadedUrls = await uploadPackageImages()
+        if(uploadedUrls.length === 0) {
+          return alert('Failed to upload images')
+        }
+        const body = { 
+          code: $('pkgCode').value, 
+          title: $('pkgTitle').value, 
+          nights: parseInt($('pkgNights').value||0), 
+          price: $('pkgPrice').value,
+          trip_details: $('pkgTripDetails').value || null,
+          images: uploadedUrls,
+          img: uploadedUrls[0]
+        }
+        const res = await fetch(apiUrl('/api/packages'), { method:'POST', headers:headers(), body:JSON.stringify(body) })
+        if(res.ok) { 
+          alert('✅ Package created with ' + uploadedUrls.length + ' image(s)')
+          packageImageFiles = []
+          $('pkgImages').value = ''
+          $('pkgCode').value = ''
+          $('pkgTitle').value = ''
+          $('pkgNights').value = ''
+          $('pkgPrice').value = ''
+          $('pkgTripDetails').value = ''
+          updateImagePreview()
+          fetchPackages() 
+        } else {
+          const errorText = await res.text()
+          alert('❌ Error: ' + errorText)
+        }
+      }
+
+      $('updatePkg').onclick = async ()=>{
+        if(!selectedPackage) return alert('Select a package first')
+        const id = selectedPackage.id
+        let currentImages = []
+        if(selectedPackage.images && Array.isArray(selectedPackage.images)) {
+          currentImages = [...selectedPackage.images]
+        } else if(selectedPackage.img) {
+          currentImages = [selectedPackage.img]
+        }
+        let newImages = []
+        if(packageImageFiles.length > 0) {
+          newImages = await uploadPackageImages()
+          if(newImages.length === 0 && packageImageFiles.length > 0) {
+            return alert('Failed to upload new images')
+          }
+        }
+        const allImages = [...currentImages, ...newImages]
+        const uniqueImages = [...new Set(allImages)]
+        if(uniqueImages.length < 1) {
+          return alert('At least 1 image is required')
+        }
+        const body = { 
+          code: $('pkgCode').value, 
+          title: $('pkgTitle').value, 
+          nights: parseInt($('pkgNights').value||0), 
+          price: $('pkgPrice').value,
+          trip_details: $('pkgTripDetails').value || null,
+          images: uniqueImages,
+          img: uniqueImages[0] || ''
+        }
+        const res = await fetch(apiUrl('/api/packages/'+id), { method:'PUT', headers:headers(), body:JSON.stringify(body) })
+        if(res.ok) { 
+          alert('✅ Package updated with ' + uniqueImages.length + ' image(s)')
+          packageImageFiles = []
+          $('pkgImages').value = ''
+          updateImagePreview()
+          fetchPackages() 
+        } else {
+          const errorText = await res.text()
+          alert('❌ Error: ' + errorText)
+        }
+      }
+
+      $('deletePkg').onclick = async ()=>{
+        if(!selectedPackage) return alert('Select a package first')
+        if(!confirm('Delete this package?')) return
+        const id=selectedPackage.id
+        const res = await fetch(apiUrl('/api/packages/'+id), { method:'DELETE', headers:headers() })
+        if(res.ok) { 
+          alert('✅ Package deleted')
+          selectedPackage=null
+          $('pkgCode').value = ''
+          $('pkgTitle').value = ''
+          $('pkgNights').value = ''
+          $('pkgPrice').value = ''
+          $('pkgTripDetails').value = ''
+          fetchPackages() 
+        } else {
+          alert('❌ Error deleting package')
+        }
+      }
+
+      $('refreshPkgs').onclick = fetchPackages
+
+      // Posts
+      // Crazy Deals
+      let selectedDeal = null
+      async function fetchDeals(){
+        try {
+          const res = await fetch(apiUrl('/api/crazy-deals/all'), { headers:headers() })
+          if(!res.ok) {
+            $('dealsList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${res.status} ${res.statusText}. Please check your authentication.</p></div>`
+            return
+          }
+          const data = await res.json()
+          const list = $('dealsList')
+          list.innerHTML = ''
+          if(!Array.isArray(data)) {
+            list.innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>Invalid response format</p></div>`
+            return
+          }
+          if(data.length === 0) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔥</div><h4>No deals found</h4><p>Create your first crazy deal</p></div>'
+            return
+          }
+          data.forEach(d=>{
+            const div = document.createElement('div')
+            div.className = 'list-item'
+            const endDate = new Date(d.end_date).toLocaleString()
+            div.innerHTML = `
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <strong style="color: #e6eef6;">${d.title}</strong>
+                  <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
+                    ${d.discount_percent || 0}% OFF • Ends: ${endDate} ${d.active ? '✓' : '✗'}
+                  </div>
+                </div>
+              </div>
+            `
+            div.onclick = ()=> selectDeal(d)
+            if (selectedDeal && selectedDeal.id === d.id) {
+              div.classList.add('selected')
+            }
+            list.appendChild(div)
+          })
+        } catch (err) {
+          $('dealsList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
+        }
+      }
+
+      function selectDeal(d){
+        selectedDeal = d
+        $('dealTitle').value = d.title||''
+        $('dealSubtitle').value = d.subtitle||''
+        $('dealDiscount').value = d.discount_percent||''
+        const endDate = new Date(d.end_date)
+        const localDate = new Date(endDate.getTime() - endDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+        $('dealEndDate').value = localDate
+        $('dealActive').checked = d.active !== false
+        fetchDeals()
+      }
+
+      $('createDeal').onclick = async ()=>{
+        const endDate = new Date($('dealEndDate').value)
+        const body = {
+          title: $('dealTitle').value,
+          subtitle: $('dealSubtitle').value || null,
+          discount_percent: parseInt($('dealDiscount').value) || null,
+          end_date: endDate.toISOString(),
+          active: $('dealActive').checked
+        }
+        const res = await fetch(apiUrl('/api/crazy-deals'), { method:'POST', headers:headers(), body:JSON.stringify(body) })
+        if(res.ok) { 
+          alert('✅ Deal created')
+          $('dealTitle').value = ''
+          $('dealSubtitle').value = ''
+          $('dealDiscount').value = ''
+          fetchDeals() 
+        } else {
+          const errorText = await res.text()
+          alert('❌ Error: ' + errorText)
+        }
+      }
+
+      $('updateDeal').onclick = async ()=>{
+        if(!selectedDeal) return alert('Select a deal first')
+        const endDate = new Date($('dealEndDate').value)
+        const body = {
+          title: $('dealTitle').value,
+          subtitle: $('dealSubtitle').value || null,
+          discount_percent: parseInt($('dealDiscount').value) || null,
+          end_date: endDate.toISOString(),
+          active: $('dealActive').checked
+        }
+        const res = await fetch(apiUrl('/api/crazy-deals/'+selectedDeal.id), { method:'PUT', headers:headers(), body:JSON.stringify(body) })
+        if(res.ok) { 
+          alert('✅ Deal updated')
+          fetchDeals() 
+        } else {
+          const errorText = await res.text()
+          alert('❌ Error: ' + errorText)
+        }
+      }
+
+      $('deleteDeal').onclick = async ()=>{
+        if(!selectedDeal) return alert('Select a deal first')
+        if(!confirm('Delete this deal?')) return
+        const res = await fetch(apiUrl('/api/crazy-deals/'+selectedDeal.id), { method:'DELETE', headers:headers() })
+        if(res.ok) { 
+          alert('✅ Deal deleted')
+          selectedDeal=null
+          fetchDeals() 
+        } else {
+          alert('❌ Error deleting deal')
+        }
+      }
+
+      $('refreshDeals').onclick = fetchDeals
+
+      // Affordable Destinations
+      let selectedDest = null
+      async function fetchDests(){
+        try {
+          const res = await fetch(apiUrl('/api/affordable-destinations/all'), { headers:headers() })
+          if(!res.ok) {
+            $('destsList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${res.status} ${res.statusText}. Please check your authentication.</p></div>`
+            return
+          }
+          const data = await res.json()
+          const list = $('destsList')
+          list.innerHTML = ''
+          if(!Array.isArray(data)) {
+            list.innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>Invalid response format</p></div>`
+            return
+          }
+          if(data.length === 0) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🌍</div><h4>No destinations found</h4><p>Create your first destination</p></div>'
+            return
+          }
+          data.forEach(d=>{
+            const div = document.createElement('div')
+            div.className = 'list-item'
+            div.innerHTML = `
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <strong style="color: #e6eef6;">${d.country}, ${d.city}</strong>
+                  <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
+                    ${d.price} • Order: ${d.display_order || 0} ${d.active ? '✓' : '✗'}
+                  </div>
+                </div>
+              </div>
+            `
+            div.onclick = ()=> selectDest(d)
+            if (selectedDest && selectedDest.id === d.id) {
+              div.classList.add('selected')
+            }
+            list.appendChild(div)
+          })
+        } catch (err) {
+          $('destsList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
+        }
+      }
+
+      function selectDest(d){
+        selectedDest = d
+        $('destCountry').value = d.country||''
+        $('destCity').value = d.city||''
+        $('destPrice').value = d.price||''
+        $('destOrder').value = d.display_order||0
+        $('destActive').checked = d.active !== false
+        fetchDests()
+      }
+
+      $('createDest').onclick = async ()=>{
+        const body = {
+          country: $('destCountry').value,
+          city: $('destCity').value,
+          price: $('destPrice').value,
+          display_order: parseInt($('destOrder').value) || 0,
+          active: $('destActive').checked
+        }
+        const res = await fetch(apiUrl('/api/affordable-destinations'), { method:'POST', headers:headers(), body:JSON.stringify(body) })
+        if(res.ok) { 
+          alert('✅ Destination created')
+          $('destCountry').value = ''
+          $('destCity').value = ''
+          $('destPrice').value = ''
+          $('destOrder').value = ''
+          fetchDests() 
+        } else {
+          const errorText = await res.text()
+          alert('❌ Error: ' + errorText)
+        }
+      }
+
+      $('updateDest').onclick = async ()=>{
+        if(!selectedDest) return alert('Select a destination first')
+        const body = {
+          country: $('destCountry').value,
+          city: $('destCity').value,
+          price: $('destPrice').value,
+          display_order: parseInt($('destOrder').value) || 0,
+          active: $('destActive').checked
+        }
+        const res = await fetch(apiUrl('/api/affordable-destinations/'+selectedDest.id), { method:'PUT', headers:headers(), body:JSON.stringify(body) })
+        if(res.ok) { 
+          alert('✅ Destination updated')
+          fetchDests() 
+        } else {
+          const errorText = await res.text()
+          alert('❌ Error: ' + errorText)
+        }
+      }
+
+      $('deleteDest').onclick = async ()=>{
+        if(!selectedDest) return alert('Select a destination first')
+        if(!confirm('Delete this destination?')) return
+        const res = await fetch(apiUrl('/api/affordable-destinations/'+selectedDest.id), { method:'DELETE', headers:headers() })
+        if(res.ok) { 
+          alert('✅ Destination deleted')
+          selectedDest=null
+          fetchDests() 
+        } else {
+          alert('❌ Error deleting destination')
+        }
+      }
+
+      $('refreshDests').onclick = fetchDests
+
+      // Travel Trips Management
+      let selectedTripId = null
+      let tripImageFiles = []
+      const tripsList = document.getElementById('tripsList')
+
+      async function fetchTrips() {
+        try {
+          const res = await fetch(apiUrl('/api/travel-trips'), { headers: headers() })
+          if (!res.ok) throw new Error('Failed to fetch trips')
+          const trips = await res.json()
+          tripsList.innerHTML = ''
+          if (trips.length === 0) {
+            tripsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">✈️</div><h4>No trips found</h4><p>Create your first travel buddy trip</p></div>'
+            return
+          }
+          tripsList.innerHTML = trips.map(t => `
+            <div class="list-item" onclick="selectTrip(${t.id})" style="cursor:pointer;${selectedTripId === t.id ? 'background:rgba(15,183,164,0.2)' : ''}">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <strong style="color: #e6eef6;">${t.title}</strong>
+                  <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
+                    ${t.destination}, ${t.country} • ${t.current_participants}/${t.max_participants} participants • Status: ${t.status}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')
+          updateStats()
+        } catch (err) {
+          tripsList.innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
+        }
+      }
+
+      window.selectTrip = function(id) {
+        selectedTripId = id
+        tripImageFiles = []
+        $('tripImages').value = ''
+        $('tripImagePreview').innerHTML = ''
+        fetchTrips()
+        fetch(apiUrl(`/api/travel-trips/${id}`))
+          .then(r => r.json())
+          .then(trip => {
+            $('tripTitle').value = trip.title || ''
+            $('tripDescription').value = trip.description || ''
+            $('tripDestination').value = trip.destination || ''
+            $('tripCountry').value = trip.country || ''
+            $('tripStartDate').value = trip.start_date || ''
+            $('tripEndDate').value = trip.end_date || ''
+            $('tripMaxParticipants').value = trip.max_participants || 10
+            $('tripPrice').value = trip.price_per_person || ''
+            $('tripRequirements').value = trip.requirements || ''
+            $('tripItinerary').value = (trip.itinerary || []).map(i => 
+              typeof i === 'string' ? i : `${i.title || 'Day'} - ${i.description || ''}`
+            ).join('\n')
+            $('tripIncluded').value = (trip.included || []).join('\n')
+            
+            // Show current images
+            const currentImages = Array.isArray(trip.images) ? trip.images : (trip.image_url ? [trip.image_url] : [])
+            const currentDiv = $('tripCurrentImages')
+            if(currentImages.length > 0) {
+              currentDiv.innerHTML = '<div style="font-size:12px;color:#94a3b8;margin-bottom:8px">Current images:</div>' +
+                currentImages.map((img, idx) => `
+                  <div class="image-preview">
+                    <img src="${img}" style="width:120px;height:120px;" />
+                    <button onclick="removeCurrentTripImage(${idx})" style="position:absolute;top:0;right:0;background:red;border:none;color:white;width:20px;height:20px;border-radius:2px;cursor:pointer;font-size:12px;line-height:1">×</button>
+                  </div>
+                `).join('')
+            } else {
+              currentDiv.innerHTML = ''
+            }
+          })
+      }
+      
+      window.removeCurrentTripImage = function(index) {
+        if(!selectedTripId) return
+        fetch(apiUrl(`/api/travel-trips/${selectedTripId}`))
+          .then(r => r.json())
+          .then(trip => {
+            const currentImages = Array.isArray(trip.images) ? trip.images : (trip.image_url ? [trip.image_url] : [])
+            currentImages.splice(index, 1)
+            const updateData = {
+              images: currentImages,
+              image_url: currentImages[0] || null
+            }
+            fetch(apiUrl(`/api/travel-trips/${selectedTripId}`), {
+              method: 'PUT',
+              headers: headers(),
+              body: JSON.stringify(updateData)
+            }).then(() => {
+              selectTrip(selectedTripId)
+              fetchTrips()
+            })
+          })
+      }
+
+      $('tripImages').onchange = function(e) {
+        const newFiles = Array.from(e.target.files)
+        if(newFiles.length < 1) return
+        const existingNames = tripImageFiles.map(f => f.name)
+        const uniqueNewFiles = newFiles.filter(f => !existingNames.includes(f.name))
+        tripImageFiles = [...tripImageFiles, ...uniqueNewFiles]
+        updateTripImagePreview()
+        e.target.value = ''
+      }
+      
+      $('addMoreTripImages').onclick = function() {
+        $('tripImages').click()
+      }
+      
+      function updateTripImagePreview() {
+        const preview = $('tripImagePreview')
+        preview.innerHTML = ''
+        if(tripImageFiles.length === 0) {
+          preview.innerHTML = '<div style="color:#64748b;font-size:12px">No images selected</div>'
+          return
+        }
+        tripImageFiles.forEach((file, i) => {
+          const reader = new FileReader()
+          reader.onload = function(e) {
+            const div = document.createElement('div')
+            div.className = 'image-preview'
+            div.innerHTML = `
+              <img src="${e.target.result}" />
+              <button onclick="removeTripImagePreview(${i})" style="position:absolute;top:0;right:0;background:red;border:none;color:white;width:20px;height:20px;border-radius:2px;cursor:pointer;font-size:12px;line-height:1">×</button>
+              <div style="font-size:10px;color:#64748b;margin-top:4px;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${file.name}</div>
+            `
+            preview.appendChild(div)
+          }
+          reader.readAsDataURL(file)
+        })
+      }
+      
+      window.removeTripImagePreview = function(index) {
+        tripImageFiles.splice(index, 1)
+        updateTripImagePreview()
+      }
+
+      async function uploadTripImages() {
+        if(tripImageFiles.length === 0) return []
+        const uploadedUrls = []
+        for(const file of tripImageFiles) {
+          const formData = new FormData()
+          formData.append('image', file)
+          formData.append('bucket', 'images')
+          formData.append('folder', 'trips')
+          // For FormData, don't set Content-Type (browser will set it with boundary)
+          const uploadHeaders = {}
+          const token = localStorage.getItem('auth_token')
+          if (token) {
+            uploadHeaders['Authorization'] = `Bearer ${token}`
+          } else {
+            uploadHeaders['x-admin-key'] = localStorage.getItem('admin_key') || 'secret-admin-key'
+          }
+          const res = await fetch(apiUrl('/api/upload'), {
+            method: 'POST',
+            headers: uploadHeaders,
+            body: formData
+          })
+          if(res.ok) {
+            const data = await res.json()
+            uploadedUrls.push(data.url)
+          } else {
+            alert('Failed to upload image: ' + file.name)
+          }
+        }
+        return uploadedUrls
+      }
+
+      $('createTrip').onclick = async () => {
+        if(tripImageFiles.length === 0) {
+          return alert('Please upload at least 1 image (recommended 3+)')
+        }
+        const uploadedUrls = await uploadTripImages()
+        if(uploadedUrls.length === 0) {
+          return alert('Failed to upload images')
+        }
+        
+        const itinerary = $('tripItinerary').value.split('\n').filter(l => l.trim()).map((line, idx) => {
+          const parts = line.split(' - ')
+          return parts.length > 1 ? { title: parts[0].trim(), description: parts[1].trim() } : { title: `Day ${idx + 1}`, description: line.trim() }
+        })
+        const included = $('tripIncluded').value.split('\n').filter(l => l.trim())
+
+        try {
+          const res = await fetch(apiUrl('/api/travel-trips'), {
+            method: 'POST',
+            headers: headers(),
+            body: JSON.stringify({
+              title: $('tripTitle').value,
+              description: $('tripDescription').value,
+              destination: $('tripDestination').value,
+              country: $('tripCountry').value,
+              start_date: $('tripStartDate').value,
+              end_date: $('tripEndDate').value,
+              max_participants: parseInt($('tripMaxParticipants').value) || 10,
+              price_per_person: $('tripPrice').value,
+              images: uploadedUrls,
+              image_url: uploadedUrls[0] || null,
+              itinerary: itinerary,
+              included: included,
+              requirements: $('tripRequirements').value
+            })
+          })
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to create trip')
+          }
+          alert('✅ Trip created with ' + uploadedUrls.length + ' image(s)!')
+          tripImageFiles = []
+          $('tripImages').value = ''
+          $('tripImagePreview').innerHTML = ''
+          $('tripTitle').value = ''
+          $('tripDescription').value = ''
+          $('tripDestination').value = ''
+          $('tripCountry').value = ''
+          $('tripStartDate').value = ''
+          $('tripEndDate').value = ''
+          $('tripMaxParticipants').value = '10'
+          $('tripPrice').value = ''
+          $('tripRequirements').value = ''
+          $('tripItinerary').value = ''
+          $('tripIncluded').value = ''
+          fetchTrips()
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('updateTrip').onclick = async () => {
+        if (!selectedTripId) return alert('Select a trip first')
+        const itinerary = $('tripItinerary').value.split('\n').filter(l => l.trim()).map((line, idx) => {
+          const parts = line.split(' - ')
+          return parts.length > 1 ? { title: parts[0].trim(), description: parts[1].trim() } : { title: `Day ${idx + 1}`, description: line.trim() }
+        })
+        const included = $('tripIncluded').value.split('\n').filter(l => l.trim())
+
+        try {
+          // Get current images from the trip
+          const tripRes = await fetch(apiUrl(`/api/travel-trips/${selectedTripId}`))
+          const currentTrip = await tripRes.json()
+          let currentImages = Array.isArray(currentTrip.images) ? currentTrip.images : (currentTrip.image_url ? [currentTrip.image_url] : [])
+          
+          // Upload new images if any
+          let newImageUrls = []
+          if(tripImageFiles.length > 0) {
+            newImageUrls = await uploadTripImages()
+          }
+          
+          // Combine current and new images (remove duplicates)
+          const uniqueImages = [...currentImages, ...newImageUrls].filter((img, idx, self) => 
+            idx === self.findIndex(i => i === img)
+          )
+          
+          const res = await fetch(apiUrl(`/api/travel-trips/${selectedTripId}`), {
+            method: 'PUT',
+            headers: headers(),
+            body: JSON.stringify({
+              title: $('tripTitle').value,
+              description: $('tripDescription').value,
+              destination: $('tripDestination').value,
+              country: $('tripCountry').value,
+              start_date: $('tripStartDate').value,
+              end_date: $('tripEndDate').value,
+              max_participants: parseInt($('tripMaxParticipants').value) || 10,
+              price_per_person: $('tripPrice').value,
+              images: uniqueImages,
+              image_url: uniqueImages[0] || null,
+              itinerary: itinerary,
+              included: included,
+              requirements: $('tripRequirements').value
+            })
+          })
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to update trip')
+          }
+          alert('✅ Trip updated with ' + uniqueImages.length + ' image(s)!')
+          tripImageFiles = []
+          $('tripImages').value = ''
+          $('tripImagePreview').innerHTML = ''
+          fetchTrips()
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('deleteTrip').onclick = async () => {
+        if (!selectedTripId) return alert('Select a trip first')
+        if (!confirm('Delete this trip?')) return
+        try {
+          const res = await fetch(apiUrl(`/api/travel-trips/${selectedTripId}`), {
+            method: 'DELETE',
+            headers: headers()
+          })
+          if (!res.ok) throw new Error('Failed to delete trip')
+          alert('✅ Trip deleted!')
+          selectedTripId = null
+          fetchTrips()
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('refreshTrips').onclick = fetchTrips
+
+      // Calendar Deals Management
+      let selectedDealId = null
+      const dealsList = document.getElementById('dealsList')
+
+      async function fetchCalendarDeals() {
+        try {
+          const res = await fetch(apiUrl('/api/calendar-deals/all'), { headers: headers() })
+          if (!res.ok) throw new Error('Failed to fetch deals')
+          const deals = await res.json()
+          dealsList.innerHTML = ''
+          if (deals.length === 0) {
+            dealsList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><h4>No calendar deals found</h4><p>Assign deals to specific dates</p></div>'
+            return
+          }
+          dealsList.innerHTML = deals.map(d => `
+            <div class="list-item" onclick="selectCalendarDeal(${d.id})" style="cursor:pointer;${selectedDealId === d.id ? 'background:rgba(15,183,164,0.2)' : ''}">
+              <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                  <strong style="color: #e6eef6;">${d.deal_date}</strong> — ${d.deal_type}
+                  <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
+                    ${d.title || 'No title'} ${d.active ? '✓' : '✗'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')
+        } catch (err) {
+          dealsList.innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
+        }
+      }
+
+      window.selectCalendarDeal = function(id) {
+        selectedDealId = id
+        fetch(apiUrl(`/api/calendar-deals/all`), { headers: headers() })
+          .then(r => r.json())
+          .then(deals => {
+            const deal = deals.find(d => d.id === id)
+            if (deal) {
+              $('dealDate').value = deal.deal_date || ''
+              $('dealType').value = deal.deal_type || ''
+              $('dealTitle').value = deal.title || ''
+              $('dealDescription').value = deal.description || ''
+              $('dealDiscount').value = deal.discount_percent || ''
+              $('dealActive').checked = deal.active !== false
+            }
+          })
+        fetchCalendarDeals()
+      }
+
+      $('saveDeal').onclick = async () => {
+        const dealDate = $('dealDate').value
+        const dealType = $('dealType').value
+        if (!dealDate || !dealType) return alert('Date and deal type are required')
+        try {
+          const res = await fetch(apiUrl('/api/calendar-deals'), {
+            method: 'POST',
+            headers: headers(),
+            body: JSON.stringify({
+              deal_date: dealDate,
+              deal_type: dealType,
+              title: $('dealTitle').value || null,
+              description: $('dealDescription').value || null,
+              discount_percent: parseInt($('dealDiscount').value) || null,
+              active: $('dealActive').checked
+            })
+          })
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to save deal')
+          }
+          alert('✅ Deal saved!')
+          $('dealDate').value = ''
+          $('dealType').value = ''
+          $('dealTitle').value = ''
+          $('dealDescription').value = ''
+          $('dealDiscount').value = ''
+          $('dealActive').checked = true
+          selectedDealId = null
+          fetchCalendarDeals()
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('deleteDeal').onclick = async () => {
+        if (!selectedDealId) return alert('Select a deal first')
+        if (!confirm('Delete this deal?')) return
+        try {
+          const res = await fetch(apiUrl(`/api/calendar-deals/${selectedDealId}`), {
+            method: 'DELETE',
+            headers: headers()
+          })
+          if (!res.ok) throw new Error('Failed to delete deal')
+          alert('✅ Deal deleted!')
+          selectedDealId = null
+          fetchCalendarDeals()
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('refreshDeals').onclick = fetchCalendarDeals
+
+      // Live Chat Management
+      let currentChatSessionId = null
+
+      async function fetchChatSessions() {
+        try {
+          const res = await fetch(apiUrl('/api/chat/messages'), { headers: headers() })
+          if (!res.ok) throw new Error('Failed to fetch messages')
+          const allMessages = await res.json()
+          
+          const sessionsMap = new Map()
+          allMessages.forEach(msg => {
+            if (!sessionsMap.has(msg.session_id)) {
+              sessionsMap.set(msg.session_id, {
+                sessionId: msg.session_id,
+                lastMessage: msg.created_at,
+                unreadCount: 0,
+                senderName: msg.sender_name || 'Anonymous'
+              })
+            }
+            const session = sessionsMap.get(msg.session_id)
+            if (new Date(msg.created_at) > new Date(session.lastMessage)) {
+              session.lastMessage = msg.created_at
+            }
+            if (msg.is_admin === false && !msg.read_at) {
+              session.unreadCount++
+            }
+          })
+          
+          const sessions = Array.from(sessionsMap.values()).sort((a, b) => 
+            new Date(b.lastMessage) - new Date(a.lastMessage)
+          )
+          
+          const select = $('chatSessionSelect')
+          select.innerHTML = '<option value="">-- Select a session --</option>'
+          sessions.forEach(s => {
+            const option = document.createElement('option')
+            option.value = s.sessionId
+            const unreadBadge = s.unreadCount > 0 ? ` (${s.unreadCount} unread)` : ''
+            option.textContent = `${s.senderName}${unreadBadge} - ${new Date(s.lastMessage).toLocaleString()}`
+            select.appendChild(option)
+          })
+          updateStats()
+        } catch (err) {
+          console.error('Failed to fetch chat sessions:', err)
+          $('chatSessionSelect').innerHTML = '<option value="">Error loading sessions</option>'
+        }
+      }
+
+      window.loadChatSession = function() {
+        const sessionId = $('chatSessionSelect').value
+        if (!sessionId) {
+          $('chatMessagesList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><h4>No session selected</h4><p>Select a chat session from the dropdown above</p></div>'
+          currentChatSessionId = null
+          return
+        }
+        
+        currentChatSessionId = sessionId
+        fetch(apiUrl(`/api/chat/messages?sessionId=${sessionId}`), { headers: headers() })
+          .then(r => r.json())
+          .then(messages => {
+            if (messages.length === 0) {
+              $('chatMessagesList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><h4>No messages</h4><p>Start the conversation</p></div>'
+              return
+            }
+            $('chatMessagesList').innerHTML = messages.map(msg => `
+              <div style="margin-bottom:12px;padding:12px;background:rgba(255,255,255,${msg.is_admin ? '0.03' : '0.06'});border-radius:8px;border-left:4px solid ${msg.is_admin ? '#0FB7A4' : '#94a3b8'}">
+                <div style="font-weight:600;color:${msg.is_admin ? '#0FB7A4' : '#e6eef6'};font-size:13px;margin-bottom:6px">
+                  ${msg.is_admin ? '👤 Admin' : '👤 ' + (msg.sender_name || 'User')}
+                </div>
+                <div style="margin-top:6px;color:#e6eef6;line-height:1.5">${msg.message}</div>
+                <div style="font-size:11px;color:#64748b;margin-top:8px">
+                  ${new Date(msg.created_at).toLocaleString()}
+                </div>
+              </div>
+            `).join('')
+            const list = $('chatMessagesList')
+            list.scrollTop = list.scrollHeight
+          })
+          .catch(err => {
+            $('chatMessagesList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
+          })
+      }
+
+      $('sendAdminReply').onclick = async () => {
+        if (!currentChatSessionId) return alert('Select a chat session first')
+        const message = $('adminReplyMessage').value.trim()
+        if (!message) return alert('Enter a message')
+        try {
+          const res = await fetch(apiUrl(`/api/chat/admin-reply`), {
+            method: 'POST',
+            headers: headers(),
+            body: JSON.stringify({ sessionId: currentChatSessionId, message })
+          })
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to send reply')
+          }
+          $('adminReplyMessage').value = ''
+          loadChatSession()
+          fetchChatSessions()
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('refreshChatSessions').onclick = () => {
+        fetchChatSessions()
+        if (currentChatSessionId) {
+          loadChatSession()
+        }
+      }
+
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          fetchChatSessions()
+          if (currentChatSessionId) {
+            loadChatSession()
+          }
+        }
+      }, 10000)
+
+      // Requests Management
+      let selectedRequestId = null
+
+      async function fetchRequests() {
+        try {
+          const statusFilter = $('requestStatusFilter').value
+          const url = statusFilter 
+            ? apiUrl(`/api/requests?status=${statusFilter}`)
+            : apiUrl('/api/requests')
+          
+          console.log('Fetching requests from:', url)
+          const res = await fetch(url, { headers: headers() })
+          console.log('Requests response status:', res.status)
+          
+          if (!res.ok) {
+            const errorText = await res.text()
+            console.error('Failed to fetch requests:', errorText)
+            throw new Error('Failed to fetch requests: ' + errorText)
+          }
+          const requests = await res.json()
+          console.log('Fetched requests:', requests.length, requests)
+          
+          const usersRes = await fetch(apiUrl('/api/users'), { headers: headers() })
+          const users = usersRes.ok ? await usersRes.json() : []
+          const usersMap = new Map(users.map(u => [u.id, u]))
+          
+          const list = $('requestsList')
+          if (requests.length === 0) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><h4>No requests found</h4><p>If you just submitted a form, check:<br><small style="margin-top: 8px; display: block;">1. Make sure the requests table exists (run MIGRATION_REQUESTS.md)<br>2. Check server console for request creation logs<br>3. Try submitting a form again</small></p></div>'
+            updateStats()
+            return
+          }
+          
+          list.innerHTML = requests.map(r => {
+            const user = r.user_id ? usersMap.get(r.user_id) : null
+            const userName = user ? user.name : (r.request_data?.name || 'Guest')
+            const userEmail = user ? user.email : (r.request_data?.email || 'N/A')
+            const statusClass = `status-${r.status}`
+            
+            return `
+              <div class="list-item ${selectedRequestId === r.id ? 'selected' : ''}" onclick="selectRequest(${r.id})" style="cursor:pointer;">
+                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+                  <strong style="color:#e6eef6;font-size:15px">${r.title}</strong>
+                  <span class="status-badge ${statusClass}">
+                    ${r.status.replace('_', ' ').toUpperCase()}
+                  </span>
+                </div>
+                <div style="font-size:12px;color:#94a3b8;margin-bottom:6px">
+                  ${r.request_type.replace('_', ' ').toUpperCase()} • ${userName} (${userEmail}) • ${new Date(r.created_at).toLocaleDateString()}
+                </div>
+                ${r.description ? `<div style="font-size:13px;color:#cfe6ff;margin-top:6px;line-height:1.4">${r.description}</div>` : ''}
+              </div>
+            `
+          }).join('')
+          updateStats()
+        } catch (err) {
+          $('requestsList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
+        }
+      }
+
+      window.selectRequest = async function(id) {
+        selectedRequestId = id
+        fetchRequests()
+        
+        try {
+          const res = await fetch(apiUrl(`/api/requests/${id}`), { headers: headers() })
+          if (!res.ok) throw new Error('Failed to fetch request details')
+          const request = await res.json()
+          
+          const usersRes = await fetch(apiUrl('/api/users'), { headers: headers() })
+          const users = usersRes.ok ? await usersRes.json() : []
+          const user = request.user_id ? users.find(u => u.id === request.user_id) : null
+          
+          const detailsDiv = $('requestDetailsContent')
+          detailsDiv.innerHTML = `
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Request Type:</strong> 
+              <span style="color:#e6eef6">${request.request_type.replace('_', ' ').toUpperCase()}</span>
+            </div>
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">User:</strong> 
+              <span style="color:#e6eef6">${user ? `${user.name} (${user.email})` : (request.request_data?.name || 'Guest')}</span>
+            </div>
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Created:</strong> 
+              <span style="color:#e6eef6">${new Date(request.created_at).toLocaleString()}</span>
+            </div>
+            ${request.description ? `
+              <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Description:</strong>
+                <div style="color:#e6eef6;margin-top:6px;line-height:1.5">${request.description}</div>
+              </div>
+            ` : ''}
+            ${request.request_data && Object.keys(request.request_data).length > 0 ? `
+              <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Request Data:</strong>
+                <pre style="background:rgba(255,255,255,0.05);padding:12px;border-radius:6px;margin-top:6px;overflow-x:auto;font-size:11px;color:#cfe6ff;line-height:1.4">${JSON.stringify(request.request_data, null, 2)}</pre>
+              </div>
+            ` : ''}
+            ${request.admin_notes ? `
+              <div style="margin-bottom:12px">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Admin Notes:</strong>
+                <div style="color:#e6eef6;margin-top:6px;padding:12px;background:rgba(15,183,164,0.1);border-radius:6px;border-left:3px solid #0FB7A4;line-height:1.5">${request.admin_notes}</div>
+              </div>
+            ` : ''}
+            ${request.payment_status ? `
+              <div style="margin-bottom:12px;padding:12px;background:rgba(15,183,164,0.1);border-radius:6px;border-left:3px solid #0FB7A4">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">💳 Payment Status:</strong>
+                <span style="color:#e6eef6;text-transform:capitalize">${request.payment_status.replace('_', ' ')}</span>
+                ${request.payment_info && request.payment_info.amount ? `
+                  <div style="margin-top:6px;color:#e6eef6">
+                    Amount: ${request.payment_info.currency || 'USD'} ${request.payment_info.amount}
+                  </div>
+                ` : ''}
+                ${request.payment_confirmed_at ? `
+                  <div style="margin-top:6px;color:#10b981;font-size:12px">
+                    ✅ Confirmed on ${new Date(request.payment_confirmed_at).toLocaleString()}
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+          `
+          
+          $('requestStatusUpdate').value = request.status
+          $('requestAdminNotes').value = request.admin_notes || ''
+          
+          // Populate payment fields
+          const paymentInfo = request.payment_info || {}
+          $('requestPaymentStatus').value = request.payment_status || 'pending'
+          $('paymentAmount').value = paymentInfo.amount || ''
+          $('paymentCurrency').value = paymentInfo.currency || 'USD'
+          $('paymentMethod').value = paymentInfo.payment_method || 'bank_transfer'
+          $('paymentBankName').value = paymentInfo.bank_name || ''
+          $('paymentAccountName').value = paymentInfo.account_name || ''
+          $('paymentAccountNumber').value = paymentInfo.account_number || ''
+          $('paymentInstructions').value = paymentInfo.instructions || ''
+          $('paymentDueDate').value = paymentInfo.due_date ? paymentInfo.due_date.split('T')[0] : ''
+          
+          $('requestDetails').style.display = 'block'
+        } catch (err) {
+          alert('❌ Error loading request: ' + err.message)
+        }
+      }
+
+      $('updateRequestStatus').onclick = async () => {
+        if (!selectedRequestId) return alert('Select a request first')
+        try {
+          const res = await fetch(apiUrl(`/api/requests/${selectedRequestId}`), {
+            method: 'PUT',
+            headers: headers(),
+            body: JSON.stringify({
+              status: $('requestStatusUpdate').value,
+              adminNotes: $('requestAdminNotes').value
+            })
+          })
+          
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to update request')
+          }
+          
+          alert('✅ Request updated successfully!')
+          fetchRequests()
+          selectRequest(selectedRequestId)
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('updatePaymentInfo').onclick = async () => {
+        if (!selectedRequestId) return alert('Select a request first')
+        try {
+          const paymentInfo = {
+            amount: $('paymentAmount').value,
+            currency: $('paymentCurrency').value,
+            payment_method: $('paymentMethod').value,
+            bank_name: $('paymentBankName').value,
+            account_name: $('paymentAccountName').value,
+            account_number: $('paymentAccountNumber').value,
+            instructions: $('paymentInstructions').value,
+            due_date: $('paymentDueDate').value || null
+          }
+          
+          const res = await fetch(apiUrl(`/api/requests/${selectedRequestId}`), {
+            method: 'PUT',
+            headers: headers(),
+            body: JSON.stringify({
+              paymentStatus: $('requestPaymentStatus').value,
+              paymentInfo: paymentInfo
+            })
+          })
+          
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to update payment info')
+          }
+          
+          alert('✅ Payment information updated!')
+          fetchRequests()
+          selectRequest(selectedRequestId)
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('confirmPayment').onclick = async () => {
+        if (!selectedRequestId) return alert('Select a request first')
+        if (!confirm('Confirm that payment has been received and verified?')) return
+        
+        try {
+          const res = await fetch(apiUrl(`/api/requests/${selectedRequestId}`), {
+            method: 'PUT',
+            headers: headers(),
+            body: JSON.stringify({
+              paymentStatus: 'payment_confirmed',
+              status: 'completed' // Auto-complete when payment confirmed
+            })
+          })
+          
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to confirm payment')
+          }
+          
+          alert('✅ Payment confirmed! Request status updated to Completed.')
+          fetchRequests()
+          selectRequest(selectedRequestId)
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('refreshRequests').onclick = fetchRequests
+
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          fetchRequests()
+          updateStats()
+        }
+      }, 30000)
+
+      // Toasts & confirmations
+      const toastContainer = document.createElement('div')
+      toastContainer.className = 'toast-container'
+      document.body.appendChild(toastContainer)
+
+      function showToast(message, type = 'success') {
+        const el = document.createElement('div')
+        el.className = `toast ${type === 'error' ? 'error' : ''}`
+        el.innerHTML = type === 'error' ? `⚠️ ${message}` : `✅ ${message}`
+        toastContainer.appendChild(el)
+        setTimeout(() => el.remove(), 4000)
+      }
+
+      const confirmBackdrop = document.createElement('div')
+      confirmBackdrop.className = 'modal-backdrop'
+      confirmBackdrop.innerHTML = `
+        <div class="modal" role="dialog" aria-modal="true">
+          <h4 id="confirmTitle">Confirm</h4>
+          <p id="confirmMessage">Are you sure?</p>
+          <div class="btn-group">
+            <button id="confirmYes">Yes</button>
+            <button class="btn-secondary" id="confirmNo">Cancel</button>
+          </div>
+        </div>
+      `
+      document.body.appendChild(confirmBackdrop)
+
+      function confirmAction(message, onYes) {
+        $('confirmMessage').textContent = message || 'Are you sure?'
+        confirmBackdrop.style.display = 'flex'
+        const cleanup = () => {
+          confirmBackdrop.style.display = 'none'
+          $('confirmYes').onclick = null
+          $('confirmNo').onclick = null
+        }
+        $('confirmYes').onclick = () => { cleanup(); onYes && onYes() }
+        $('confirmNo').onclick = cleanup
+      }
+
+      // Testimonials Management
+      let selectedTestimonialId = null
+
+      async function fetchTestimonials() {
+        try {
+          const statusFilter = $('testimonialStatusFilter').value
+          const searchTerm = ($('testimonialSearch')?.value || '').toLowerCase().trim()
+          const url = statusFilter 
+            ? apiUrl(`/api/testimonials/all?status=${statusFilter}`)
+            : apiUrl('/api/testimonials/all')
+          
+          const res = await fetch(url, { headers: headers() })
+          if (!res.ok) {
+            const errorText = await res.text()
+            throw new Error('Failed to fetch testimonials: ' + errorText)
+          }
+          let testimonials = await res.json()
+
+          // Local search filter
+          if (searchTerm) {
+            testimonials = testimonials.filter(t => {
+              return (
+                (t.name || '').toLowerCase().includes(searchTerm) ||
+                (t.email || '').toLowerCase().includes(searchTerm) ||
+                (t.location || '').toLowerCase().includes(searchTerm) ||
+                (t.text || '').toLowerCase().includes(searchTerm)
+              )
+            })
+          }
+          
+          const list = $('testimonialsList')
+          if (testimonials.length === 0) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⭐</div><h4>No testimonials found</h4><p>Testimonials submitted by users will appear here</p></div>'
+            return
+          }
+          
+          list.innerHTML = testimonials.map(t => {
+            const statusClass = t.status === 'approved' ? 'pill-approved' : t.status === 'rejected' ? 'pill-rejected' : 'pill-pending'
+            const stars = '⭐'.repeat(t.rating || 5)
+            return `
+              <div class="list-item ${selectedTestimonialId === t.id ? 'selected' : ''}" onclick="selectTestimonial(${t.id})" style="cursor:pointer;">
+                <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+                  <strong style="color:#e6eef6;font-size:15px">${t.name || 'Anonymous'}</strong>
+                  <span class="status-pill ${statusClass}">
+                    ${t.status === 'approved' ? '✅ Approved' : t.status === 'rejected' ? '❌ Rejected' : '🟡 Pending'}
+                  </span>
+                </div>
+                <div style="font-size:12px;color:#94a3b8;margin-bottom:6px">
+                  ${stars} • ${t.location || 'No location'} • ${new Date(t.created_at).toLocaleDateString()}
+                </div>
+                <div style="font-size:13px;color:#cfe6ff;margin-top:6px;line-height:1.4;max-height:60px;overflow:hidden">
+                  ${t.text.substring(0, 150)}${t.text.length > 150 ? '...' : ''}
+                </div>
+              </div>
+            `
+          }).join('')
+        } catch (err) {
+          $('testimonialsList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
+        }
+      }
+
+      window.selectTestimonial = async function(id) {
+        selectedTestimonialId = id
+        fetchTestimonials()
+        
+        try {
+          const res = await fetch(apiUrl(`/api/testimonials/all`), { headers: headers() })
+          if (!res.ok) throw new Error('Failed to fetch testimonial details')
+          const testimonials = await res.json()
+          const testimonial = testimonials.find(t => t.id === id)
+          
+          if (!testimonial) {
+            $('testimonialDetails').style.display = 'none'
+            return
+          }
+          
+          const detailsDiv = $('testimonialDetailsContent')
+          const stars = '⭐'.repeat(testimonial.rating || 5)
+          detailsDiv.innerHTML = `
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Name:</strong> 
+              <span style="color:#e6eef6">${testimonial.name || 'Anonymous'}</span>
+            </div>
+            ${testimonial.email ? `
+              <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Email:</strong> 
+                <span style="color:#e6eef6">${testimonial.email}</span>
+              </div>
+            ` : ''}
+            ${testimonial.location ? `
+              <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Location:</strong> 
+                <span style="color:#e6eef6">${testimonial.location}</span>
+              </div>
+            ` : ''}
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Rating:</strong> 
+              <span style="color:#e6eef6;font-size:18px">${stars}</span>
+            </div>
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Created:</strong> 
+              <span style="color:#e6eef6">${new Date(testimonial.created_at).toLocaleString()}</span>
+            </div>
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Testimonial:</strong>
+              <div style="color:#e6eef6;margin-top:6px;line-height:1.5;padding:12px;background:rgba(255,255,255,0.05);border-radius:6px">${testimonial.text}</div>
+            </div>
+            ${testimonial.admin_notes ? `
+              <div style="margin-bottom:12px">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Admin Notes:</strong>
+                <div style="color:#e6eef6;margin-top:6px;padding:12px;background:rgba(15,183,164,0.1);border-radius:6px;border-left:3px solid #0FB7A4;line-height:1.5">${testimonial.admin_notes}</div>
+              </div>
+            ` : ''}
+          `
+          
+          $('testimonialStatusUpdate').value = testimonial.status || 'pending'
+          $('testimonialAdminNotes').value = testimonial.admin_notes || ''
+          $('testimonialDetails').style.display = 'block'
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('updateTestimonialStatus').onclick = async () => {
+        if (!selectedTestimonialId) return alert('Select a testimonial first')
+        try {
+          const res = await fetch(apiUrl(`/api/testimonials/${selectedTestimonialId}`), {
+            method: 'PUT',
+            headers: headers(),
+            body: JSON.stringify({
+              status: $('testimonialStatusUpdate').value,
+              adminNotes: $('testimonialAdminNotes').value
+            })
+          })
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to update testimonial')
+          }
+          alert('✅ Testimonial updated!')
+          fetchTestimonials()
+          selectTestimonial(selectedTestimonialId)
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('approveTestimonial').onclick = async () => {
+        if (!selectedTestimonialId) return alert('Select a testimonial first')
+        try {
+          const res = await fetch(apiUrl(`/api/testimonials/${selectedTestimonialId}`), {
+            method: 'PUT',
+            headers: headers(),
+            body: JSON.stringify({
+              status: 'approved',
+              adminNotes: $('testimonialAdminNotes').value
+            })
+          })
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to approve testimonial')
+          }
+          alert('✅ Testimonial approved!')
+          fetchTestimonials()
+          selectTestimonial(selectedTestimonialId)
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('rejectTestimonial').onclick = async () => {
+        if (!selectedTestimonialId) return alert('Select a testimonial first')
+        try {
+          const res = await fetch(apiUrl(`/api/testimonials/${selectedTestimonialId}`), {
+            method: 'PUT',
+            headers: headers(),
+            body: JSON.stringify({
+              status: 'rejected',
+              adminNotes: $('testimonialAdminNotes').value
+            })
+          })
+          if (!res.ok) {
+            const err = await res.json()
+            throw new Error(err.error || 'Failed to reject testimonial')
+          }
+          alert('✅ Testimonial rejected!')
+          fetchTestimonials()
+          selectTestimonial(selectedTestimonialId)
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('deleteTestimonial').onclick = async () => {
+        if (!selectedTestimonialId) return alert('Select a testimonial first')
+        if (!confirm('Delete this testimonial? This cannot be undone.')) return
+        try {
+          const res = await fetch(apiUrl(`/api/testimonials/${selectedTestimonialId}`), {
+            method: 'DELETE',
+            headers: headers()
+          })
+          if (!res.ok) throw new Error('Failed to delete testimonial')
+          alert('✅ Testimonial deleted!')
+          selectedTestimonialId = null
+          $('testimonialDetails').style.display = 'none'
+          fetchTestimonials()
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('refreshTestimonials').onclick = fetchTestimonials
+
+      // User Management
+      let selectedUserId = null
+
+      async function fetchUsers() {
+        try {
+          const searchTerm = $('userSearchFilter').value.trim().toLowerCase()
+          const fieldFilter = $('userFieldFilter').value
+          
+          // Fetch users, requests, and chat messages in parallel
+          const [usersRes, requestsRes, chatRes] = await Promise.all([
+            fetch(apiUrl('/api/users'), { headers: headers() }),
+            fetch(apiUrl('/api/requests'), { headers: headers() }),
+            fetch(apiUrl('/api/chat/messages'), { headers: headers() })
+          ])
+          
+          if (!usersRes.ok) {
+            const errorText = await usersRes.text()
+            throw new Error('Failed to fetch users: ' + errorText)
+          }
+          
+          let users = await usersRes.json()
+          const requests = requestsRes.ok ? await requestsRes.json() : []
+          const chatMessages = chatRes.ok ? await chatRes.json() : []
+          
+          // Calculate pending requests and active chat for each user
+          const userStats = {}
+          requests.forEach(req => {
+            if (req.user_id && !userStats[req.user_id]) {
+              userStats[req.user_id] = { pendingRequests: 0, hasActiveChat: false }
+            }
+            if (req.user_id && req.status === 'pending') {
+              userStats[req.user_id].pendingRequests++
+            }
+          })
+          
+          // Check for active chat (messages in last 7 days)
+          const sevenDaysAgo = new Date()
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+          
+          chatMessages.forEach(msg => {
+            if (msg.user_id && !userStats[msg.user_id]) {
+              userStats[msg.user_id] = { pendingRequests: 0, hasActiveChat: false }
+            }
+            if (msg.user_id && new Date(msg.created_at) >= sevenDaysAgo) {
+              userStats[msg.user_id].hasActiveChat = true
+            }
+          })
+          
+          // Attach stats to users
+          users = users.map(user => ({
+            ...user,
+            pendingRequests: userStats[user.id]?.pendingRequests || 0,
+            hasActiveChat: userStats[user.id]?.hasActiveChat || false
+          }))
+          
+          // Filter users based on search term and field filter
+          if (searchTerm) {
+            users = users.filter(user => {
+              const firstName = (user.first_name || '').toLowerCase()
+              const lastName = (user.last_name || '').toLowerCase()
+              const email = (user.email || '').toLowerCase()
+              const phone = (user.phone || '').toLowerCase()
+              const name = (user.name || '').toLowerCase()
+              
+              if (fieldFilter === 'first_name') {
+                return firstName.includes(searchTerm) || name.includes(searchTerm)
+              } else if (fieldFilter === 'last_name') {
+                return lastName.includes(searchTerm) || name.includes(searchTerm)
+              } else if (fieldFilter === 'email') {
+                return email.includes(searchTerm)
+              } else if (fieldFilter === 'phone') {
+                return phone.includes(searchTerm)
+              } else {
+                // Search all fields
+                return firstName.includes(searchTerm) || 
+                       lastName.includes(searchTerm) || 
+                       email.includes(searchTerm) || 
+                       phone.includes(searchTerm) ||
+                       name.includes(searchTerm)
+              }
+            })
+          }
+          
+          // Sort by created date (newest first)
+          users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          
+          const list = $('usersList')
+          if (users.length === 0) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👥</div><h4>No users found</h4><p>' + (searchTerm ? 'Try a different search term' : 'No users registered yet') + '</p></div>'
+            return
+          }
+          
+          // Render as table
+          list.innerHTML = `
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Role</th>
+                  <th>Pending Requests</th>
+                  <th>Active Chat</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${users.map(u => {
+                  const firstName = u.first_name || (u.name ? u.name.split(' ')[0] : 'N/A')
+                  const lastName = u.last_name || (u.name ? u.name.split(' ').slice(1).join(' ') : '')
+                  const fullName = u.name || `${firstName} ${lastName}`.trim() || 'N/A'
+                  const roleBadge = u.role === 'admin' 
+                    ? '<span class="badge badge-admin">ADMIN</span>'
+                    : '<span class="badge badge-user">USER</span>'
+                  const pendingBadge = u.pendingRequests > 0
+                    ? `<span class="badge badge-pending">${u.pendingRequests}</span>`
+                    : '<span class="badge badge-none">0</span>'
+                  const chatBadge = u.hasActiveChat
+                    ? '<span class="badge badge-active">Yes</span>'
+                    : '<span class="badge badge-none">No</span>'
+                  
+                  return `
+                    <tr class="${selectedUserId === u.id ? 'selected' : ''}" onclick="selectUser(${u.id})" style="cursor:pointer;">
+                      <td><strong>${fullName}</strong></td>
+                      <td>${u.email || 'N/A'}</td>
+                      <td>${u.phone || 'N/A'}</td>
+                      <td>${roleBadge}</td>
+                      <td>${pendingBadge}</td>
+                      <td>${chatBadge}</td>
+                      <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                      <td><button class="btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="event.stopPropagation(); selectUser(${u.id})">View</button></td>
+                    </tr>
+                  `
+                }).join('')}
+              </tbody>
+            </table>
+          `
+        } catch (err) {
+          $('usersList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
+        }
+      }
+
+      window.selectUser = async function(id) {
+        selectedUserId = id
+        fetchUsers()
+        
+        try {
+          const res = await fetch(apiUrl('/api/users'), { headers: headers() })
+          if (!res.ok) throw new Error('Failed to fetch user details')
+          const users = await res.json()
+          const user = users.find(u => u.id === id)
+          
+          if (!user) {
+            $('userDetails').style.display = 'none'
+            return
+          }
+          
+          const firstName = user.first_name || (user.name ? user.name.split(' ')[0] : 'N/A')
+          const lastName = user.last_name || (user.name ? user.name.split(' ').slice(1).join(' ') : '')
+          const fullName = user.name || `${firstName} ${lastName}`.trim() || 'N/A'
+          
+          const detailsDiv = $('userDetailsContent')
+          detailsDiv.innerHTML = `
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Full Name:</strong> 
+              <span style="color:#e6eef6">${fullName}</span>
+            </div>
+            ${firstName && lastName ? `
+              <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">First Name:</strong> 
+                <span style="color:#e6eef6">${firstName}</span>
+              </div>
+              <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Last Name:</strong> 
+                <span style="color:#e6eef6">${lastName}</span>
+              </div>
+            ` : ''}
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Email:</strong> 
+              <span style="color:#e6eef6">${user.email || 'N/A'}</span>
+            </div>
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Phone:</strong> 
+              <span style="color:#e6eef6">${user.phone || 'N/A'}</span>
+            </div>
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Role:</strong> 
+              <span style="color:#e6eef6;text-transform:capitalize">${user.role || 'user'}</span>
+            </div>
+            ${user.gender ? `
+              <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Gender:</strong> 
+                <span style="color:#e6eef6;text-transform:capitalize">${user.gender.replace('_', ' ')}</span>
+              </div>
+            ` : ''}
+            ${user.age_range ? `
+              <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Age Range:</strong> 
+                <span style="color:#e6eef6">${user.age_range}</span>
+              </div>
+            ` : ''}
+            <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
+              <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Member Since:</strong> 
+              <span style="color:#e6eef6">${new Date(user.created_at).toLocaleString()}</span>
+            </div>
+            ${user.updated_at && user.updated_at !== user.created_at ? `
+              <div style="margin-bottom:12px">
+                <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Last Updated:</strong> 
+                <span style="color:#e6eef6">${new Date(user.updated_at).toLocaleString()}</span>
+              </div>
+            ` : ''}
+          `
+          
+          $('userDetails').style.display = 'block'
+        } catch (err) {
+          alert('❌ Error: ' + err.message)
+        }
+      }
+
+      $('refreshUsers').onclick = fetchUsers
+
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          fetchRequests()
+          updateStats()
+        }
+      }, 30000)
+
+      // Initial load
+      updateStats()
+      fetchPackages()
+      fetchDeals()
+      fetchDests()
+      fetchTrips()
+      fetchChatSessions()
+      fetchCalendarDeals()
+      fetchRequests()
+      fetchTestimonials()
+      fetchUsers()
+
+      // Chat Sidebar Functions
+      let chatSidebarCollapsed = false
+      let chatActiveTab = 'chat'
+      let chatMessages = []
+      let chatConversations = []
+      let chatUnreadCount = 0
+      let selectedChatSessionId = null
+      let usersMap = new Map() // Map user_id to user object
+      const QUICK_REPLIES = [
+        "Hello! How can I help you today?",
+        "Thanks for reaching out!",
+        "I'll get back to you shortly.",
+        "Is there anything else I can help with?"
+      ]
+
+      function toggleChatSidebar() {
+        chatSidebarCollapsed = !chatSidebarCollapsed
+        const sidebar = $('chatSidebar')
+        const collapsed = $('chatCollapsed')
+        const expanded = $('chatExpanded')
+        
+        if (chatSidebarCollapsed) {
+          sidebar.classList.add('collapsed')
+          collapsed.style.display = 'flex'
+          expanded.style.display = 'none'
+        } else {
+          sidebar.classList.remove('collapsed')
+          collapsed.style.display = 'none'
+          expanded.style.display = 'block'
+        }
+      }
+
+      function switchChatTab(tab) {
+        chatActiveTab = tab
+        $('chatTabConversations').classList.toggle('active', tab === 'conversations')
+        $('chatTabChat').classList.toggle('active', tab === 'chat')
+        $('chatConversationsView').style.display = tab === 'conversations' ? 'block' : 'none'
+        $('chatChatView').style.display = tab === 'chat' ? 'block' : 'none'
+        
+        if (tab === 'conversations') {
+          loadChatConversations()
+        } else {
+          // Only load messages if a session is selected
+          if (selectedChatSessionId) {
+            loadChatMessages(selectedChatSessionId)
+          } else {
+            // Clear messages display
+            $('chatMessages').innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px 20px;">Select a conversation to view messages</div>'
+          }
+        }
+      }
+
+      async function loadChatMessages(sessionId = null) {
+        try {
+          // If no sessionId provided, use the selected one
+          const targetSessionId = sessionId || selectedChatSessionId
+          
+          // Build URL with session filter if we have a sessionId
+          let url = apiUrl('/api/chat/messages')
+          if (targetSessionId) {
+            url += `?sessionId=${encodeURIComponent(targetSessionId)}`
+          }
+          
+          const res = await fetch(url, { headers: headers() })
+          if (res.ok) {
+            const messages = await res.json()
+            // Filter messages by sessionId if provided
+            if (targetSessionId) {
+              chatMessages = messages.filter(msg => msg.session_id === targetSessionId)
+            } else {
+              chatMessages = messages
+            }
+            renderChatMessages()
+            updateUnreadCount()
+          }
+        } catch (err) {
+          console.error('Failed to load chat messages:', err)
+        }
+      }
+
+      function renderChatMessages() {
+        const container = $('chatMessages')
+        
+        // Check if a session is selected
+        if (!selectedChatSessionId) {
+          container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px 20px;">Select a conversation to view messages</div>'
+          return
+        }
+        
+        // Filter messages to only show those from the selected session
+        const filteredMessages = chatMessages.filter(msg => msg.session_id === selectedChatSessionId)
+        
+        if (filteredMessages.length === 0) {
+          container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px 20px;">No messages yet. Start the conversation!</div>'
+          return
+        }
+        
+         container.innerHTML = filteredMessages.map(msg => {
+           // Admin view: admin messages (is_admin true) on the RIGHT, user messages on the LEFT
+           const isAdminMessage = !!msg.is_admin
+           
+           return `
+           <div style="display: flex; justify-content: ${isAdminMessage ? 'flex-end' : 'flex-start'}; margin-bottom: 12px;">
+             <div class="chat-message ${isAdminMessage ? 'admin' : 'user'}" style="max-width: 80%;">
+               ${isAdminMessage ? `<div style="font-size: 11px; font-weight: 600; color: #0FB7A4; margin-bottom: 4px;">${msg.sender_name || 'Admin'}</div>` : `<div style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 4px;">${msg.sender_name || 'User'}</div>`}
+               <div style="font-size: 13px;">${msg.message}</div>
+               <div style="font-size: 10px; color: rgba(255,255,255,0.6); margin-top: 4px;">
+                 ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+               </div>
+             </div>
+           </div>
+         `}).join('')
+        container.scrollTop = container.scrollHeight
+      }
+
+      async function loadUsers() {
+        try {
+          const res = await fetch(apiUrl('/api/users'), { headers: headers() })
+          if (res.ok) {
+            const users = await res.json()
+            usersMap.clear()
+            users.forEach(user => {
+              usersMap.set(user.id, user)
+            })
+          }
+        } catch (err) {
+          console.error('Failed to load users:', err)
+        }
+      }
+
+      function getUserNameFromSession(sessionId) {
+        // Extract user_id from session_id patterns like "user_5_1" or "user_4"
+        const match = sessionId.match(/^user_(\d+)/)
+        if (match) {
+          const userId = parseInt(match[1])
+          const user = usersMap.get(userId)
+          if (user) {
+            // Prefer first_name + last_name, fallback to name
+            if (user.first_name || user.last_name) {
+              return `${user.first_name || ''} ${user.last_name || ''}`.trim()
+            }
+            return user.name || user.email || `User ${userId}`
+          }
+        }
+        // For guest sessions or unknown patterns, return a default
+        if (sessionId.startsWith('session_')) {
+          return 'Guest User'
+        }
+        return 'Unknown User'
+      }
+
+      function formatLastMessageTime(timestamp) {
+        if (!timestamp) return ''
+        
+        const now = new Date()
+        const msgTime = new Date(timestamp)
+        const diffMs = now - msgTime
+        const diffMins = Math.floor(diffMs / 60000)
+        const diffHours = Math.floor(diffMs / 3600000)
+        const diffDays = Math.floor(diffMs / 86400000)
+        
+        // Less than 1 minute ago
+        if (diffMins < 1) {
+          return 'Just now'
+        }
+        // Less than 1 hour ago
+        if (diffMins < 60) {
+          return `${diffMins}m ago`
+        }
+        // Less than 24 hours ago
+        if (diffHours < 24) {
+          return `${diffHours}h ago`
+        }
+        // Less than 7 days ago
+        if (diffDays < 7) {
+          return `${diffDays}d ago`
+        }
+        // Older than 7 days - show date
+        const isToday = msgTime.toDateString() === now.toDateString()
+        const isYesterday = diffDays === 1
+        
+        if (isToday) {
+          return msgTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        } else if (isYesterday) {
+          return 'Yesterday'
+        } else {
+          return msgTime.toLocaleDateString([], { month: 'short', day: 'numeric' })
+        }
+      }
+
+      async function loadChatConversations() {
+        try {
+          // Load users first to map user_ids to names
+          await loadUsers()
+          
+          const res = await fetch(apiUrl('/api/chat/messages'), { headers: headers() })
+          if (res.ok) {
+            const messages = await res.json()
+            // Group by session
+            const sessions = {}
+            messages.forEach(msg => {
+              const sid = msg.session_id || 'default'
+              if (!sessions[sid]) {
+                sessions[sid] = {
+                  sessionId: sid,
+                  messages: [],
+                  lastMessage: null,
+                  unread: 0,
+                  userId: null
+                }
+              }
+              sessions[sid].messages.push(msg)
+              if (!sessions[sid].lastMessage || new Date(msg.created_at) > new Date(sessions[sid].lastMessage.created_at)) {
+                sessions[sid].lastMessage = msg
+              }
+              // Extract user_id from session or message
+              if (!sessions[sid].userId && msg.user_id) {
+                sessions[sid].userId = msg.user_id
+              } else if (!sessions[sid].userId) {
+                const match = sid.match(/^user_(\d+)/)
+                if (match) {
+                  sessions[sid].userId = parseInt(match[1])
+                }
+              }
+              if (msg.is_admin && !msg.read_at) {
+                sessions[sid].unread++
+              }
+            })
+            
+            chatConversations = Object.values(sessions).sort((a, b) => {
+              // Sort by last message time (most recent first)
+              if (!a.lastMessage && !b.lastMessage) return 0
+              if (!a.lastMessage) return 1
+              if (!b.lastMessage) return -1
+              return new Date(b.lastMessage.created_at) - new Date(a.lastMessage.created_at)
+            })
+            renderChatConversations()
+          }
+        } catch (err) {
+          console.error('Failed to load conversations:', err)
+        }
+      }
+
+      function renderChatConversations() {
+        const container = $('chatConversationsList')
+        if (chatConversations.length === 0) {
+          container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px 20px;">No active conversations</div>'
+          return
+        }
+        
+        container.innerHTML = chatConversations.map(conv => {
+          const userName = getUserNameFromSession(conv.sessionId)
+          const lastMessageTime = conv.lastMessage ? formatLastMessageTime(conv.lastMessage.created_at) : ''
+          return `
+          <div class="chat-conversation-item" onclick="selectChatConversation('${conv.sessionId}')">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 13px; font-weight: 600; color: #e6eef6;">${userName}</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                ${lastMessageTime ? `<span style="font-size: 10px; color: rgba(255,255,255,0.5);">${lastMessageTime}</span>` : ''}
+                ${conv.unread > 0 ? `<span style="background: #ef4444; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px;">${conv.unread}</span>` : ''}
+              </div>
+            </div>
+            ${conv.lastMessage ? `<div style="font-size: 11px; color: rgba(255,255,255,0.6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${conv.lastMessage.message}</div>` : ''}
+          </div>
+        `}).join('')
+      }
+
+      function selectChatConversation(sessionId) {
+        // Store selected session and load messages for this session
+        selectedChatSessionId = sessionId
+        loadChatMessages(sessionId)
+        switchChatTab('chat')
+      }
+
+      async function sendChatMessage(e) {
+        e.preventDefault()
+        const input = $('chatInput')
+        const message = input.value.trim()
+        if (!message) return
+
+        // Require a selected session
+        if (!selectedChatSessionId) {
+          alert('Please select a conversation first')
+          return
+        }
+
+        input.value = ''
+        
+        try {
+          const res = await fetch(apiUrl('/api/chat/messages'), {
+            method: 'POST',
+            headers: headers(),
+            body: JSON.stringify({
+              sessionId: selectedChatSessionId,
+              senderName: 'Admin',
+              message: message,
+              is_admin: true
+            })
+          })
+          
+          if (res.ok) {
+            loadChatMessages(selectedChatSessionId)
+          }
+        } catch (err) {
+          console.error('Failed to send message:', err)
+          alert('Failed to send message')
+        }
+      }
+
+      function renderQuickReplies() {
+        const container = $('chatQuickReplies')
+        container.innerHTML = QUICK_REPLIES.map(reply => `
+          <button class="quick-reply-btn" onclick="$('chatInput').value = '${reply.replace(/'/g, "\\'")}'">${reply.substring(0, 30)}...</button>
+        `).join('')
+      }
+
+      function updateUnreadCount() {
+        // Count unread messages across all conversations (not just selected session)
+        // We need to reload all messages to get accurate unread count
+        fetch(apiUrl('/api/chat/messages'), { headers: headers() })
+          .then(res => res.json())
+          .then(allMessages => {
+            // Count unread admin messages (messages from users that admin hasn't read)
+            chatUnreadCount = allMessages.filter(msg => !msg.is_admin && !msg.read_at).length
+            
+            // Update badges
+            if (chatUnreadCount > 0) {
+              $('chatUnreadExpanded').style.display = 'block'
+              $('chatUnreadCountExpanded').textContent = chatUnreadCount > 9 ? '9+' : chatUnreadCount
+              $('chatUnreadCountExpanded').style.display = 'flex'
+              $('chatTabBadge').textContent = chatUnreadCount > 9 ? '9+' : chatUnreadCount
+              $('chatTabBadge').style.display = 'inline-block'
+              
+              $('chatUnreadCollapsed').style.display = 'block'
+              $('chatUnreadCountCollapsed').textContent = chatUnreadCount > 9 ? '9+' : chatUnreadCount
+              $('chatUnreadCountCollapsed').style.display = chatUnreadCount > 0 ? 'flex' : 'none'
+            } else {
+              $('chatUnreadExpanded').style.display = 'none'
+              $('chatTabBadge').style.display = 'none'
+              $('chatUnreadCollapsed').style.display = 'none'
+            }
+          })
+          .catch(err => console.error('Failed to update unread count:', err))
+      }
+
+      // Initialize chat sidebar
+      renderQuickReplies()
+      loadChatConversations()
+      
+      // Refresh chat every 5 seconds
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          if (selectedChatSessionId) {
+            loadChatMessages(selectedChatSessionId)
+          }
+          loadChatConversations()
+        }
+      }, 5000)
+
+      // Logout function
+      function handleLogout() {
+        if (confirm('Are you sure you want to logout?')) {
+          // Clear auth token
+          localStorage.removeItem('auth_token')
+          localStorage.removeItem('chat_session_id')
+          localStorage.removeItem('last_read_timestamp')
+          
+          // Redirect to frontend app
+          // Try to get frontend URL from referrer or localStorage, otherwise use default Vite port
+          let frontendUrl = localStorage.getItem('frontend_url') || 'http://localhost:5173'
+          
+          // If we have a referrer from a different origin, use that
+          if (document.referrer) {
+            try {
+              const referrerUrl = new URL(document.referrer)
+              const currentUrl = new URL(window.location.href)
+              // If referrer is from different origin (different port), use it
+              if (referrerUrl.origin !== currentUrl.origin) {
+                frontendUrl = referrerUrl.origin
+              }
+            } catch (e) {
+              // Invalid referrer, use default
+            }
+          }
+          
+          window.location.href = frontendUrl
+        }
+      }
+    </script>
+  </body>
+</html>

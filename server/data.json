@@ -1,0 +1,36 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "title": "Welcome to BT2",
+      "slug": "welcome",
+      "content": "This is sample post content."
+    }
+  ],
+  "packages": [
+    {
+      "id": 1,
+      "code": "BT2-GRE-01",
+      "title": "Greek Islands Escape",
+      "nights": 7,
+      "price": "$1,099",
+      "img": "/assets/santorini.jpg"
+    },
+    {
+      "id": 2,
+      "code": "BT2-LON-02",
+      "title": "London City Break",
+      "nights": 4,
+      "price": "$899",
+      "img": "/assets/london.jpg"
+    },
+    {
+      "id": 3,
+      "code": "BT2-CRB-03",
+      "title": "Caribbean Getaway",
+      "nights": 5,
+      "price": "$1,299",
+      "img": "/assets/caribbean.jpg"
+    }
+  ]
+}
