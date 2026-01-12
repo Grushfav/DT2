@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNotifications } from '../contexts/NotificationContext'
-import logo from '../photos/BT2_logo.png'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000'
 
@@ -17,7 +16,7 @@ export default function Nav({ onPrimaryClick = () => {}, onLoginClick = () => {}
         <div className="flex items-center gap-3 mb-6">
         
           <div>
-            <div className="font-serif text-xl leading-none"><img src={logo} alt="BT2 Horizon" className="w-12 h-12" /></div>
+            <div className="font-serif text-xl leading-none"><img src="/images/bt2_logo.png" alt="BT2 Horizon" className="w-12 h-12" /></div>
             <div className="text-sm text-white/80">BT<sup>2</sup></div>
           </div>
         </div>

@@ -1,6 +1,5 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import adrianImage from '../photos/Adrian_Wellington.jpeg'
 
 export default function About() {
   return (
@@ -8,7 +7,7 @@ export default function About() {
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
         <div className="flex justify-center md:justify-start">
           <img 
-            src={adrianImage} 
+            src="/images/Adrian_Wellington.jpeg" 
             alt="Adrian Wellington" 
             className="w-64 h-64 object-cover rounded-2xl shadow-lg" 
             style={{ objectPosition: 'center top' }}

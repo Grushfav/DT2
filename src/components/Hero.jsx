@@ -1,12 +1,11 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import mainImage from '../photos/main.jpg'
 
 export default function Hero({ onPrimaryClick = () => {} }) {
   return (
     <section className="relative h-screen flex items-center" aria-label="Hero">
       <div className="absolute inset-0 overflow-hidden">
-        <img src={mainImage} alt="Hero" className="w-full h-full object-cover" />
+        <img src="/images/main.jpg" alt="Hero" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-[rgba(11,29,58,0.45)] to-[rgba(11,29,58,0.15)]" />
       </div>
 
