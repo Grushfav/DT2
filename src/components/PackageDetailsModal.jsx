@@ -4,6 +4,26 @@ import { useAuth } from '../contexts/AuthContext'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000'
 
+// Format inclusions for display
+function formatInclusions(inclusions) {
+  if (!inclusions || typeof inclusions !== 'object') {
+    return 'Flights + Hotel' // Default fallback
+  }
+  
+  const parts = []
+  if (inclusions.flights) parts.push('Flights')
+  if (inclusions.hotel) parts.push('Hotel')
+  if (inclusions.meal) parts.push('Meal')
+  if (inclusions.vehicle) parts.push('Vehicle')
+  
+  if (parts.length === 0) {
+    return 'Custom Package'
+  }
+  
+  // Format: "Flights + Hotel" or "Flights + Hotel + Meal + Vehicle"
+  return parts.join(' + ')
+}
+
 export default function PackageDetailsModal({ open, onClose, package: pkg, onRequest }) {
   const { user, token } = useAuth()
   const [toast, setToast] = React.useState(null)
@@ -17,14 +37,14 @@ export default function PackageDetailsModal({ open, onClose, package: pkg, onReq
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+        className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/50"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       >
         <motion.div
-          className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-xl md:rounded-xl rounded-t-3xl md:max-w-4xl w-full h-full md:h-auto max-h-[95vh] md:max-h-[90vh] overflow-y-auto"
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
@@ -62,7 +82,7 @@ export default function PackageDetailsModal({ open, onClose, package: pkg, onReq
           {/* Content */}
           <div className="p-6">
             {/* Package Info */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
               <div>
                 <div className="text-sm text-slate-600 mb-1">Package Code</div>
                 <div className="font-semibold font-mono">{pkg.code}</div>
@@ -77,7 +97,7 @@ export default function PackageDetailsModal({ open, onClose, package: pkg, onReq
               </div>
               <div>
                 <div className="text-sm text-slate-600 mb-1">Includes</div>
-                <div className="font-semibold">Flights + Hotel</div>
+                <div className="font-semibold">{formatInclusions(pkg.inclusions)}</div>
               </div>
             </div>
 
@@ -112,7 +132,7 @@ export default function PackageDetailsModal({ open, onClose, package: pkg, onReq
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-6 border-t">
+            <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t">
               <button
                 onClick={async () => {
                   // If user is logged in, auto-submit request
@@ -157,13 +177,13 @@ export default function PackageDetailsModal({ open, onClose, package: pkg, onReq
                     onClose()
                   }
                 }}
-                className="flex-1 bg-teal hover:bg-teal-dark text-white font-semibold px-6 py-3 rounded-lg transition-colors"
+                className="flex-1 bg-teal hover:bg-teal-dark active:bg-teal-dark text-white font-semibold px-6 py-3 rounded-lg transition-colors min-h-[44px] touch-manipulation"
               >
                 Request This Package
               </button>
               <button
                 onClick={onClose}
-                className="px-6 py-3 border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors"
+                className="px-6 py-3 border border-slate-300 hover:bg-slate-50 active:bg-slate-100 rounded-lg transition-colors min-h-[44px] touch-manipulation"
               >
                 Close
               </button>

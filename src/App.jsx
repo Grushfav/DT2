@@ -25,6 +25,7 @@ import CrazyDealBadge from './components/CrazyDealBadge'
 import FlyList from './components/FlyList'
 import PackageDetailsModal from './components/PackageDetailsModal'
 import BankDetails from './components/BankDetails'
+import LiveChat from './components/LiveChat'
 
 export default function App() {
   const [isModalOpen, setModalOpen] = useState(false)
@@ -78,7 +79,7 @@ export default function App() {
         onMyRequestsClick={handleMyRequestsClick}
         onBankDetailsClick={() => setBankDetailsOpen(true)}
       />
-      <main className="md:pl-72">
+      <main className="md:pl-72 pt-16 md:pt-0">
         <Hero onPrimaryClick={() => setModalOpen(true)} />
         <TrustBar />
         <Services 
@@ -211,6 +212,9 @@ export default function App() {
         open={isBankDetailsOpen} 
         onClose={() => setBankDetailsOpen(false)} 
       />
+
+      {/* Live Chat floating button/modal */}
+      <LiveChat />
     </div>
   )
 }

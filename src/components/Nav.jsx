@@ -110,37 +110,94 @@ export default function Nav({ onPrimaryClick = () => {}, onLoginClick = () => {}
       </aside>
 
       {/* Mobile top bar with hamburger */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-transparent p-3 flex items-center justify-between">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-[100] bg-gradient-to-b from-navy/90 to-transparent backdrop-blur-sm p-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-white">
           <div className="w-10 h-10 rounded-full bg-gold/90 flex items-center justify-center text-navy font-bold">BT</div>
           <div className="font-semibold">BT2 Horizon</div>
         </div>
         <div>
-          <button onClick={() => setMobileOpen(true)} className="p-2 bg-white/10 rounded">☰</button>
+          <button 
+            onClick={() => setMobileOpen(true)} 
+            className="p-2 bg-white/10 rounded min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation active:bg-white/20"
+            aria-label="Open menu"
+          >
+            ☰
+          </button>
         </div>
       </header>
 
       {/* Mobile overlay nav */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-60 bg-navy text-white p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2"><div className="w-10 h-10 rounded-full bg-gold/90 flex items-center justify-center text-navy font-bold">BT</div><div className="font-semibold">BT2</div></div>
-            <button onClick={() => setMobileOpen(false)} className="text-white/80">Close</button>
-          </div>
+        <>
+          {/* Backdrop */}
+          <div 
+            className="md:hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* Menu */}
+          <div className="md:hidden fixed inset-0 z-[201] bg-navy text-white p-6 overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-gold/90 flex items-center justify-center text-navy font-bold">BT</div>
+                <div className="font-semibold">BT2</div>
+              </div>
+              <button 
+                onClick={() => setMobileOpen(false)} 
+                className="text-white/80 min-h-[44px] min-w-[44px] flex items-center justify-center text-xl touch-manipulation active:text-white"
+                aria-label="Close menu"
+              >
+                ✕
+              </button>
+            </div>
 
           <nav>
-            <ul className="flex flex-col gap-4 text-lg">
-              <li><a onClick={() => setMobileOpen(false)} href="#">Home</a></li>
-              <li><a onClick={() => setMobileOpen(false)} href="#">Packages</a></li>
-              <li><a onClick={() => setMobileOpen(false)} href="#">Deals</a></li>
-              <li><a onClick={() => setMobileOpen(false)} href="#">Services</a></li>
-              <li><a onClick={() => setMobileOpen(false)} href="#">Testimonials</a></li>
+            <ul className="flex flex-col gap-2 text-lg">
+              <li>
+                <button 
+                  onClick={() => setMobileOpen(false)} 
+                  className="w-full text-left py-3 px-2 rounded-lg active:bg-white/10 touch-manipulation min-h-[44px]"
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => setMobileOpen(false)} 
+                  className="w-full text-left py-3 px-2 rounded-lg active:bg-white/10 touch-manipulation min-h-[44px]"
+                >
+                  Packages
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => setMobileOpen(false)} 
+                  className="w-full text-left py-3 px-2 rounded-lg active:bg-white/10 touch-manipulation min-h-[44px]"
+                >
+                  Deals
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => setMobileOpen(false)} 
+                  className="w-full text-left py-3 px-2 rounded-lg active:bg-white/10 touch-manipulation min-h-[44px]"
+                >
+                  Services
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => setMobileOpen(false)} 
+                  className="w-full text-left py-3 px-2 rounded-lg active:bg-white/10 touch-manipulation min-h-[44px]"
+                >
+                  Testimonials
+                </button>
+              </li>
               {user && (
                 <>
                   <li className="mt-4 pt-4 border-t border-white/20">
                     <button
                       onClick={() => { setMobileOpen(false); onSavedFormsClick() }}
-                      className="w-full text-left"
+                      className="w-full text-left py-3 px-2 rounded-lg active:bg-white/10 touch-manipulation min-h-[44px]"
                     >
                       📋 My Saved Forms
                     </button>
@@ -148,7 +205,7 @@ export default function Nav({ onPrimaryClick = () => {}, onLoginClick = () => {}
                   <li>
                     <button
                       onClick={() => { setMobileOpen(false); onMyRequestsClick() }}
-                      className="w-full text-left"
+                      className="w-full text-left py-3 px-2 rounded-lg active:bg-white/10 touch-manipulation min-h-[44px]"
                     >
                       📝 My Requests
                     </button>
@@ -156,7 +213,7 @@ export default function Nav({ onPrimaryClick = () => {}, onLoginClick = () => {}
                   <li>
                     <button
                       onClick={() => { setMobileOpen(false); onBankDetailsClick() }}
-                      className="w-full text-left"
+                      className="w-full text-left py-3 px-2 rounded-lg active:bg-white/10 touch-manipulation min-h-[44px]"
                     >
                       🏦 Bank Details
                     </button>
@@ -201,7 +258,7 @@ export default function Nav({ onPrimaryClick = () => {}, onLoginClick = () => {}
                 </div>
                 <button
                   onClick={() => { setMobileOpen(false); logout() }}
-                  className="w-full text-sm px-3 py-2 rounded bg-white/10 text-white"
+                  className="w-full text-sm px-3 py-3 rounded bg-white/10 text-white active:bg-white/20 touch-manipulation min-h-[44px]"
                 >
                   Logout
                 </button>
@@ -209,13 +266,14 @@ export default function Nav({ onPrimaryClick = () => {}, onLoginClick = () => {}
             ) : (
               <button
                 onClick={() => { setMobileOpen(false); onLoginClick() }}
-                className="w-full bg-white/10 text-white px-4 py-3 rounded"
+                className="w-full bg-white/10 text-white px-4 py-3 rounded active:bg-white/20 touch-manipulation min-h-[44px]"
               >
                 Login
               </button>
             )}
           </div>
         </div>
+        </>
       )}
     </>
   )

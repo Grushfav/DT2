@@ -92,10 +92,25 @@ app.get('/api/packages', async (req, res) => {
       if (images.length === 0 && pkg.img) {
         images = [pkg.img]
       }
+      // Parse inclusions JSONB if it's a string
+      let inclusions = pkg.inclusions
+      if (inclusions && typeof inclusions === 'string') {
+        try {
+          inclusions = JSON.parse(inclusions)
+        } catch (e) {
+          inclusions = { flights: true, hotel: true, meal: false, vehicle: false } // Default fallback
+        }
+      }
+      // If no inclusions, use default
+      if (!inclusions || typeof inclusions !== 'object') {
+        inclusions = { flights: true, hotel: true, meal: false, vehicle: false }
+      }
+      
       return {
         ...pkg,
         images: images,
-        img: images[0] || pkg.img || null // Ensure img field is set
+        img: images[0] || pkg.img || null, // Ensure img field is set
+        inclusions: inclusions // Ensure inclusions is always an object
       }
     })
     res.json(packages.sort((a,b)=> (a.id||0)-(b.id||0)))
@@ -107,7 +122,7 @@ app.get('/api/packages', async (req, res) => {
 
 app.post('/api/packages', requireAdmin, async (req, res) => {
   try {
-    const { code, title, nights, price, img, images, trip_details } = req.body
+    const { code, title, nights, price, img, images, trip_details, inclusions } = req.body
     
     // Validate images array (minimum 1 image, recommended 7+)
     let imageArray = []
@@ -123,12 +138,16 @@ app.post('/api/packages', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'At least 1 image is required' })
     }
     
+    // Process inclusions - default to Flights + Hotel if not provided
+    let inclusionsData = inclusions || { flights: true, hotel: true, meal: false, vehicle: false }
+    
     const row = await db.insert('packages', { 
       code, 
       title, 
       nights, 
       price, 
       trip_details: trip_details || null,
+      inclusions: inclusionsData, // Store as JSONB
       img: imageArray[0] || null, // Legacy field
       images: imageArray // Send as array - Supabase will handle JSONB conversion
     })
@@ -142,7 +161,7 @@ app.post('/api/packages', requireAdmin, async (req, res) => {
 app.put('/api/packages/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params
-    const { code, title, nights, price, img, images, trip_details } = req.body
+    const { code, title, nights, price, img, images, trip_details, inclusions } = req.body
     
     // Handle images - always update if provided
     let imageArray = []
@@ -159,12 +178,21 @@ app.put('/api/packages/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'At least 1 image is required' })
     }
     
+    // Process inclusions - preserve existing if not provided, otherwise use new value
+    let inclusionsData = inclusions
+    if (inclusionsData === undefined) {
+      // If not provided, try to get existing from database
+      const existing = await db.get('packages', id)
+      inclusionsData = existing?.inclusions || { flights: true, hotel: true, meal: false, vehicle: false }
+    }
+    
     const updateData = { 
       code, 
       title, 
       nights, 
       price,
       trip_details: trip_details !== undefined ? trip_details : null,
+      inclusions: inclusionsData, // Store as JSONB
       img: imageArray[0], // Legacy field - always set first image
       images: imageArray // Send as array - Supabase will handle JSONB conversion
     }
@@ -668,6 +696,11 @@ app.get('/api/requests', async (req, res) => {
       user = auth.verifyToken(token)
     }
     
+    // If not admin and no authenticated user and no explicit userId filter, deny
+    if (!isAdmin && !user && !userId) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+    
     let requests = []
     try {
       requests = await db.all('requests')
@@ -726,14 +759,21 @@ app.get('/api/requests/:id', async (req, res) => {
       return res.status(404).json({ error: 'Request not found' })
     }
     
+    const adminKey = req.header('x-admin-key')
+    const isAdmin = adminKey && adminKey === ADMIN_KEY
+    
     // Check for token
     const token = req.header('Authorization')?.replace('Bearer ', '')
-    if (token) {
-      const user = auth.verifyToken(token)
-      // Non-admin users can only view their own requests
-      if (user && user.role !== 'admin' && request.user_id !== user.id) {
-        return res.status(403).json({ error: 'Access denied' })
-      }
+    const user = token ? auth.verifyToken(token) : null
+    
+    // If not admin and no token, deny
+    if (!isAdmin && !user) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+    
+    // Non-admin users can only view their own requests
+    if (!isAdmin && user && user.role !== 'admin' && request.user_id !== user.id) {
+      return res.status(403).json({ error: 'Access denied' })
     }
     
     res.json(request)
@@ -1145,121 +1185,139 @@ app.post('/api/travel-periods', async (req, res) => {
   }
 })
 
-// Chat endpoints
+// ============================================
+// CHAT API - Simplified & Clean Implementation
+// ============================================
+
+// Send a chat message (user or admin)
 app.post('/api/chat/messages', async (req, res) => {
   try {
-    const { sessionId, senderName, senderEmail, message, userId } = req.body
+    const { sessionId, senderName, senderEmail, message, userId, isAdmin: isAdminMessage } = req.body
     
     if (!sessionId || !message) {
       return res.status(400).json({ error: 'Session ID and message are required' })
     }
 
-    // Try to insert with user_id, fallback if column doesn't exist
-    let chatMessage
-    try {
-      chatMessage = await db.insert('chat_messages', {
-        session_id: sessionId,
-        sender_name: senderName || 'Anonymous',
-        sender_email: senderEmail || null,
-        user_id: userId ? parseInt(userId) : null,
-        message: message,
-        is_admin: false
-      })
-    } catch (insertError) {
-      // If user_id column doesn't exist, insert without it
-      if (insertError.code === 'PGRST204' && insertError.message && insertError.message.includes('user_id')) {
-        console.warn('⚠️  user_id column not found in chat_messages. Run migration: server/MIGRATION_CHAT_USER_ID.md')
-        chatMessage = await db.insert('chat_messages', {
-          session_id: sessionId,
-          sender_name: senderName || 'Anonymous',
-          sender_email: senderEmail || null,
-          message: message,
-          is_admin: false
-        })
-      } else {
-        throw insertError
-      }
+    // Check if sender is admin
+    const token = req.header('Authorization')?.replace('Bearer ', '')
+    const adminKey = req.header('x-admin-key')
+    let user = null
+    if (token) {
+      user = auth.verifyToken(token)
     }
+    const trimmedAdminKey = adminKey ? adminKey.trim() : null
+    const isAdmin = (user && user.role === 'admin') || (trimmedAdminKey && trimmedAdminKey === ADMIN_KEY)
 
-    // Emit to all connected clients
+    const chatMessage = await db.insert('chat_messages', {
+      session_id: sessionId,
+      sender_name: senderName || (user ? (user.name || user.email) : 'Anonymous'),
+      sender_email: senderEmail || (user ? user.email : null),
+      user_id: userId ? parseInt(userId) : (user ? user.id : null),
+      message: message,
+      is_admin: isAdminMessage || false
+    })
+
+    // Emit to all connected clients via Socket.IO
     io.emit('new_message', chatMessage)
 
     res.json({ success: true, message: chatMessage })
   } catch (error) {
-    console.error('Error inserting into chat_messages:', error)
-    console.error('Chat message error:', error)
+    console.error('Error sending chat message:', error)
     res.status(500).json({ error: 'Failed to send message' })
   }
 })
 
+// Get chat messages
 app.get('/api/chat/messages', async (req, res) => {
   try {
-    const { sessionId, userId } = req.query
+    const { sessionId } = req.query
     const token = req.header('Authorization')?.replace('Bearer ', '')
+    const adminKey = req.header('x-admin-key')
+    
     let user = null
     if (token) {
       user = auth.verifyToken(token)
     }
     
-    const isAdmin = user && user.role === 'admin'
-    const currentUserId = user?.id || (userId ? parseInt(userId) : null)
+    const trimmedAdminKey = adminKey ? adminKey.trim() : null
+    const isAdmin = (user && user.role === 'admin') || (trimmedAdminKey && trimmedAdminKey === ADMIN_KEY)
     
-    let messages
+    let messages = []
+    
     if (sessionId) {
-      // Get messages for specific session
+      // Get messages for a specific session
       const allMessages = await db.all('chat_messages')
       messages = allMessages
-        .filter(m => {
-          // Must match the requested session
-          if (m.session_id !== sessionId) {
-            return false
-          }
-          
-          // Admins can see all messages for any session
-          if (isAdmin) {
-            return true
-          }
-          
-          // For logged-in regular users
-          if (currentUserId) {
-            // Include user's own messages (by user_id)
-            if (m.user_id === currentUserId) {
-              return true
-            }
-            // Include admin messages ONLY if this session belongs to this user
-            // (session starts with user_{userId} or user_{userId}_)
-            if (m.is_admin) {
-              const sessionPattern = `user_${currentUserId}`
-              if (sessionId.startsWith(sessionPattern)) {
-                return true
-              }
-              // Don't show admin messages for other users' sessions
-              return false
-            }
-            // Include non-admin messages from other users in the same session (for group chats if needed)
-            return true
-          }
-          
-          // For guest users (not logged in), only show their own non-admin messages
-          // Do NOT show admin messages to guests
-          return !m.is_admin
-        })
+        .filter(m => m.session_id === sessionId)
         .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+    } else if (isAdmin) {
+      // Admin: Get all messages (for conversation list)
+      messages = await db.all('chat_messages')
+      messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
     } else {
-      // Get all messages (only for admin)
-      if (isAdmin) {
-        messages = await db.all('chat_messages')
-        messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-      } else {
-        // Regular users shouldn't access this endpoint without sessionId
-        messages = []
-      }
+      // Regular user without sessionId: return empty
+      return res.json([])
     }
 
     res.json(messages)
   } catch (error) {
-    console.error('Get chat messages error:', error)
+    console.error('Error fetching chat messages:', error)
     res.status(500).json({ error: 'Failed to get messages' })
+  }
+})
+
+// Get chat sessions/conversations (admin only)
+app.get('/api/chat/sessions', async (req, res) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '')
+    const adminKey = req.header('x-admin-key')
+    
+    let user = null
+    if (token) {
+      user = auth.verifyToken(token)
+    }
+    
+    const trimmedAdminKey = adminKey ? adminKey.trim() : null
+    const isAdmin = (user && user.role === 'admin') || (trimmedAdminKey && trimmedAdminKey === ADMIN_KEY)
+    
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Admin access required' })
+    }
+
+    // Get all messages and group by session
+    const allMessages = await db.all('chat_messages')
+    const sessionsMap = new Map()
+    
+    allMessages.forEach(msg => {
+      const sid = msg.session_id
+      if (!sessionsMap.has(sid)) {
+        sessionsMap.set(sid, {
+          sessionId: sid,
+          lastMessage: msg,
+          lastMessageTime: new Date(msg.created_at),
+          unreadCount: 0,
+          userId: msg.user_id
+        })
+      } else {
+        const session = sessionsMap.get(sid)
+        const msgTime = new Date(msg.created_at)
+        if (msgTime > session.lastMessageTime) {
+          session.lastMessage = msg
+          session.lastMessageTime = msgTime
+        }
+        if (!msg.is_admin && !msg.read_at) {
+          session.unreadCount++
+        }
+      }
+    })
+
+    const sessions = Array.from(sessionsMap.values())
+      .sort((a, b) => b.lastMessageTime - a.lastMessageTime)
+
+    res.json(sessions)
+  } catch (error) {
+    console.error('Error fetching chat sessions:', error)
+    res.status(500).json({ error: 'Failed to get sessions' })
   }
 })
 

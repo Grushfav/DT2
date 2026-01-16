@@ -280,12 +280,14 @@
       }
       .section-content {
         overflow: hidden;
-        transition: max-height 0.3s ease;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+        max-height: 5000px;
       }
       .section-content.collapsed {
         max-height: 0;
         padding-top: 0;
         padding-bottom: 0;
+        overflow: hidden;
       }
       
       /* Loading Spinner */
@@ -656,9 +658,11 @@
         flex-direction: column;
         box-shadow: -4px 0 20px rgba(0,0,0,0.3);
         transition: transform 0.3s ease;
+        transform: translateX(0);
       }
       .chat-sidebar.collapsed {
-        width: 64px;
+        width: 384px;
+        transform: translateX(calc(100% - 64px));
       }
       .chat-sidebar-header {
         background: rgba(15, 183, 164, 0.2);
@@ -813,9 +817,9 @@
         <aside class="admin-nav">
           <h4>📂 Quick Navigation</h4>
           <button class="nav-link" onclick="jumpTo('statsGrid')">Overview <span class="tag">Stats</span></button>
+          <button class="nav-link" onclick="jumpTo('section-users')">Users <span class="tag">Accounts</span></button>
           <button class="nav-link" onclick="jumpTo('section-requests')">Requests <span class="tag">Leads</span></button>
           <button class="nav-link" onclick="jumpTo('section-testimonials')">Testimonials <span class="tag">Reviews</span></button>
-          <button class="nav-link" onclick="jumpTo('section-users')">Users <span class="tag">Accounts</span></button>
           <button class="nav-link" onclick="jumpTo('section-content-management')">Content Management <span class="tag">Packages/Trips/Deals</span></button>
           <button class="nav-link" onclick="jumpTo('section-chat')">Live Chat <span class="tag">Support</span></button>
           <button class="nav-link" onclick="jumpTo('section-crazy-deals')">Crazy Deals <span class="tag">Promo</span></button>
@@ -846,6 +850,51 @@
             </div>
           </div>
 
+          <!-- User Management (moved above Requests & Submissions) -->
+          <div class="card" id="section-users">
+            <h3 class="section-toggle" onclick="toggleSection('usersSection')">
+              <span>👥 User Management</span>
+            </h3>
+            <div id="usersSection" class="section-content">
+              <div style="margin-bottom: 12px;">
+                <label>Search/Filter Users</label>
+                <input 
+                  type="text" 
+                  id="userSearchFilter" 
+                  placeholder="Search by first name, last name, email, or phone..." 
+                  style="margin-top: 4px; width: 100%;"
+                  oninput="fetchUsers()"
+                />
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label>Filter by Field</label>
+                <select id="userFieldFilter" style="margin-top: 4px;" onchange="fetchUsers()">
+                  <option value="">All Fields</option>
+                  <option value="first_name">First Name</option>
+                  <option value="last_name">Last Name</option>
+                  <option value="email">Email</option>
+                  <option value="phone">Phone</option>
+                </select>
+              </div>
+              <div id="usersList" style="max-height: 600px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
+                <div class="empty-state">
+                  <div class="spinner"></div>
+                  <p style="margin-top: 12px;">Loading users...</p>
+                </div>
+              </div>
+              <div id="userDetails" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; display: none; border: 1px solid rgba(15, 183, 164, 0.2);">
+                <h4 style="margin-top: 0; margin-bottom: 16px; color: #0FB7A4; font-size: 16px;">User Details</h4>
+                <div id="userDetailsContent"></div>
+                <div class="btn-group" style="margin-top: 16px;">
+                  <button class="btn-secondary" id="cancelUserView" onclick="document.getElementById('userDetails').style.display='none'">Close</button>
+                </div>
+              </div>
+              <div class="btn-group">
+                <button id="refreshUsers">🔄 Refresh Users</button>
+              </div>
+            </div>
+          </div>
+
           <!-- Requests & Submissions Management -->
           <div class="card" id="section-requests">
         <h3 class="section-toggle" onclick="toggleSection('requestsSection')">
@@ -862,13 +911,13 @@
               <option value="completed">Completed</option>
             </select>
           </div>
-          <div id="requestsList" style="max-height: 500px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
+          <div id="requestsList" style="max-height: 500px; overflow-y: auto; background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; margin-bottom: 16px; min-height: 120px; border: 1px solid rgba(15,183,164,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.25); display: flex; flex-direction: column; gap: 12px;">
             <div class="empty-state">
               <div class="spinner"></div>
               <p style="margin-top: 12px;">Loading requests...</p>
             </div>
           </div>
-          <div id="requestDetails" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; display: none; border: 1px solid rgba(15, 183, 164, 0.2);">
+          <div id="requestDetails" style="margin-top: 16px; padding: 18px; background: rgba(255,255,255,0.06); border-radius: 12px; display: none; border: 1px solid rgba(15, 183, 164, 0.3); box-shadow: 0 8px 24px rgba(0,0,0,0.25);">
             <h4 style="margin-top: 0; margin-bottom: 16px; color: #0FB7A4; font-size: 16px;">Request Details</h4>
             <div id="requestDetailsContent"></div>
             <div style="margin-top: 16px;">
@@ -901,15 +950,6 @@
                 <input type="text" id="paymentAmount" placeholder="e.g. 500.00" style="margin-top: 4px;" />
               </div>
               <div style="margin-bottom: 12px;">
-                <label>Currency</label>
-                <select id="paymentCurrency" style="margin-top: 4px;">
-                  <option value="USD">USD</option>
-                  <option value="JMD">JMD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                </select>
-              </div>
-              <div style="margin-bottom: 12px;">
                 <label>Payment Method</label>
                 <select id="paymentMethod" style="margin-top: 4px;">
                   <option value="bank_transfer">Bank Transfer</option>
@@ -917,26 +957,6 @@
                   <option value="cash">Cash</option>
                   <option value="other">Other</option>
                 </select>
-              </div>
-              <div style="margin-bottom: 12px;">
-                <label>Bank Name</label>
-                <input type="text" id="paymentBankName" placeholder="e.g. Bank of Jamaica" style="margin-top: 4px;" />
-              </div>
-              <div style="margin-bottom: 12px;">
-                <label>Account Name</label>
-                <input type="text" id="paymentAccountName" placeholder="e.g. BT2 Horizon" style="margin-top: 4px;" />
-              </div>
-              <div style="margin-bottom: 12px;">
-                <label>Account Number</label>
-                <input type="text" id="paymentAccountNumber" placeholder="Account number" style="margin-top: 4px;" />
-              </div>
-              <div style="margin-bottom: 12px;">
-                <label>Payment Instructions</label>
-                <textarea id="paymentInstructions" rows="3" style="margin-top: 4px;" placeholder="Special instructions for payment..."></textarea>
-              </div>
-              <div style="margin-bottom: 12px;">
-                <label>Due Date</label>
-                <input type="date" id="paymentDueDate" style="margin-top: 4px;" />
               </div>
               <div class="btn-group" style="margin-top: 12px;">
                 <button id="updatePaymentInfo" class="btn-secondary">💾 Update Payment Info</button>
@@ -950,117 +970,6 @@
           </div>
           <div class="btn-group">
             <button id="refreshRequests">🔄 Refresh Requests</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Testimonials Management -->
-      <div class="card" id="section-testimonials">
-        <h3 class="section-toggle" onclick="toggleSection('testimonialsSection')">
-          <span>⭐ Testimonials</span>
-        </h3>
-        <div id="testimonialsSection" class="section-content collapsed">
-          <div class="toolbar">
-            <div style="flex:1; min-width: 200px;">
-              <label>Search</label>
-              <input id="testimonialSearch" placeholder="Search by name, email, text..." oninput="fetchTestimonials()" />
-            </div>
-            <div style="width: 200px;">
-              <label>Status</label>
-              <select id="testimonialStatusFilter" style="margin-top: 4px;" onchange="fetchTestimonials()">
-                <option value="">All</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
-            <div class="btn-group" style="margin-top: 0;">
-              <button id="refreshTestimonials" class="btn-secondary">🔄 Refresh</button>
-            </div>
-          </div>
-          <div id="testimonialsList" style="max-height: 500px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
-            <div class="empty-state">
-              <div class="spinner"></div>
-              <p style="margin-top: 12px;">Loading testimonials...</p>
-            </div>
-          </div>
-          <div id="testimonialDetails" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; display: none; border: 1px solid rgba(15, 183, 164, 0.2);">
-            <h4 style="margin-top: 0; margin-bottom: 16px; color: #0FB7A4; font-size: 16px;">Testimonial Details</h4>
-            <div id="testimonialDetailsContent"></div>
-            <div style="margin-top: 16px;">
-              <label>Status</label>
-              <select id="testimonialStatusUpdate" style="margin-top: 4px;">
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
-            <div style="margin-top: 12px;">
-              <label>Admin Notes</label>
-              <textarea id="testimonialAdminNotes" rows="3" style="margin-top: 4px;" placeholder="Add notes about this testimonial..."></textarea>
-            </div>
-            <div class="btn-group" style="margin-top: 16px;">
-              <button id="updateTestimonialStatus">💾 Update Status</button>
-              <button id="approveTestimonial" style="background: #10b981; color: white;">✅ Approve</button>
-              <button id="rejectTestimonial" style="background: #ef4444; color: white;">❌ Reject</button>
-              <button id="deleteTestimonial" class="btn-danger">🗑️ Delete</button>
-              <button class="btn-secondary" id="cancelTestimonialEdit" onclick="document.getElementById('testimonialDetails').style.display='none'">Cancel</button>
-            </div>
-          </div>
-          <div class="toolbar">
-            <div class="btn-group" style="margin-top:0">
-              <button id="updateTestimonialStatus">💾 Update Status</button>
-              <button id="approveTestimonial" style="background: #10b981; color: white;">✅ Approve</button>
-              <button id="rejectTestimonial" style="background: #ef4444; color: white;">❌ Reject</button>
-              <button id="deleteTestimonial" class="btn-danger">🗑️ Delete</button>
-              <button class="btn-secondary" id="cancelTestimonialEdit" onclick="document.getElementById('testimonialDetails').style.display='none'">Cancel</button>
-              <button id="refreshTestimonials" class="btn-secondary">🔄 Refresh</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- User Management -->
-      <div class="card" id="section-users">
-        <h3 class="section-toggle" onclick="toggleSection('usersSection')">
-          <span>👥 User Management</span>
-        </h3>
-        <div id="usersSection" class="section-content collapsed">
-          <div style="margin-bottom: 12px;">
-            <label>Search/Filter Users</label>
-            <input 
-              type="text" 
-              id="userSearchFilter" 
-              placeholder="Search by first name, last name, email, or phone..." 
-              style="margin-top: 4px; width: 100%;"
-              oninput="fetchUsers()"
-            />
-          </div>
-          <div style="margin-bottom: 12px;">
-            <label>Filter by Field</label>
-            <select id="userFieldFilter" style="margin-top: 4px;" onchange="fetchUsers()">
-              <option value="">All Fields</option>
-              <option value="first_name">First Name</option>
-              <option value="last_name">Last Name</option>
-              <option value="email">Email</option>
-              <option value="phone">Phone</option>
-            </select>
-          </div>
-          <div id="usersList" style="max-height: 600px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
-            <div class="empty-state">
-              <div class="spinner"></div>
-              <p style="margin-top: 12px;">Loading users...</p>
-            </div>
-          </div>
-          <div id="userDetails" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; display: none; border: 1px solid rgba(15, 183, 164, 0.2);">
-            <h4 style="margin-top: 0; margin-bottom: 16px; color: #0FB7A4; font-size: 16px;">User Details</h4>
-            <div id="userDetailsContent"></div>
-            <div class="btn-group" style="margin-top: 16px;">
-              <button class="btn-secondary" id="cancelUserView" onclick="document.getElementById('userDetails').style.display='none'">Close</button>
-            </div>
-          </div>
-          <div class="btn-group">
-            <button id="refreshUsers">🔄 Refresh Users</button>
           </div>
         </div>
       </div>
@@ -1087,6 +996,25 @@
             <div class="row">
               <input id="pkgNights" type="number" placeholder="Nights" />
               <input id="pkgPrice" placeholder="Price" />
+            </div>
+            <label style="margin-top: 12px; display: block;">Package Inclusions</label>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; padding: 12px; background: rgba(15, 183, 164, 0.05); border-radius: 8px;">
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
+                <input type="checkbox" id="pkgIncludesFlights" style="width: 18px; height: 18px; cursor: pointer;" />
+                <span>✈️ Flights</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
+                <input type="checkbox" id="pkgIncludesHotel" style="width: 18px; height: 18px; cursor: pointer;" checked />
+                <span>🏨 Hotel</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
+                <input type="checkbox" id="pkgIncludesMeal" style="width: 18px; height: 18px; cursor: pointer;" />
+                <span>🍽️ Meal</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px;">
+                <input type="checkbox" id="pkgIncludesVehicle" style="width: 18px; height: 18px; cursor: pointer;" />
+                <span>🚗 Vehicle</span>
+              </label>
             </div>
             <label style="margin-top: 12px; display: block;">Trip Details</label>
             <textarea id="pkgTripDetails" rows="6" placeholder="Enter detailed trip information: itinerary, inclusions, exclusions, important notes, etc." style="margin-top: 6px; width: 100%; resize: vertical;"></textarea>
@@ -1178,105 +1106,134 @@
         </div>
       </div>
 
-      <!-- Live Chat Management -->
-      <div class="card" id="section-chat">
-        <h3 class="section-toggle" onclick="toggleSection('chatSection')">
-          <span>💬 Live Chat Management</span>
-        </h3>
-        <div id="chatSection" class="section-content collapsed">
-          <div style="margin-bottom: 12px;">
-            <label>Select Chat Session</label>
-            <select id="chatSessionSelect" style="margin-top: 4px;" onchange="loadChatSession()">
-              <option value="">-- Select a session --</option>
-            </select>
-          </div>
-          <div id="chatMessagesList" style="max-height: 400px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
-            <div class="empty-state">
-              <div class="empty-state-icon">💬</div>
-              <h4>No session selected</h4>
-              <p>Select a chat session from the dropdown above</p>
+      <div class="row" style="align-items: flex-start; gap: 16px;">
+        <!-- Crazy Deals -->
+        <div class="card" id="section-crazy-deals" style="flex: 1;">
+          <h3 class="section-toggle" onclick="toggleSection('crazyDealsSection')">
+            <span>🔥 Crazy Deals</span>
+          </h3>
+          <div id="crazyDealsSection" class="section-content">
+            <input id="dealTitle" placeholder="Title (e.g. Santorini)" />
+            <input id="dealSubtitle" placeholder="Subtitle (e.g. Limited seats • Book now)" style="margin-top: 12px;" />
+            <div class="row" style="margin-top: 12px;">
+              <input id="dealDiscount" type="number" placeholder="Discount % (e.g. 40)" />
+              <input id="dealEndDate" type="datetime-local" placeholder="End Date" />
             </div>
+            <label style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+              <input id="dealActive" type="checkbox" checked />
+              <span>Active</span>
+            </label>
+            <div class="btn-group">
+              <button id="createDeal">✨ Create Deal</button>
+              <button id="updateDeal" class="btn-secondary">✏️ Update Selected</button>
+              <button id="deleteDeal" class="btn-danger">🗑️ Delete Selected</button>
+              <button id="refreshDeals" class="btn-secondary">🔄 Refresh</button>
+            </div>
+            <div id="dealsList" style="margin-top: 16px;"></div>
           </div>
-          <div class="row">
-            <input id="adminReplyMessage" placeholder="Type your reply..." />
-            <button id="sendAdminReply">📤 Send Reply</button>
-          </div>
-          <div class="btn-group">
-            <button id="refreshChatSessions" class="btn-secondary">🔄 Refresh Sessions</button>
+        </div>
+
+        <!-- Affordable Destinations -->
+        <div class="card" id="section-destinations" style="flex: 1;">
+          <h3 class="section-toggle" onclick="toggleSection('destinationsSection')">
+            <span>🌍 Affordable Destinations</span>
+          </h3>
+          <div id="destinationsSection" class="section-content">
+            <div class="toolbar">
+              <div style="flex:1; min-width: 200px;">
+                <label>Search</label>
+                <input id="destSearch" placeholder="Search by country or city..." oninput="fetchDests()" />
+              </div>
+              <div style="width: 180px;">
+                <label>Status</label>
+                <select id="destStatusFilter" style="margin-top:4px;" onchange="fetchDests()">
+                  <option value="">All</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+              <div class="btn-group" style="margin-top:0">
+                <button id="refreshDests" class="btn-secondary">🔄 Refresh</button>
+              </div>
+            </div>
+            <div class="row">
+              <input id="destCountry" placeholder="Country" />
+              <input id="destCity" placeholder="City" />
+            </div>
+            <div class="row" style="margin-top: 12px;">
+              <input id="destPrice" placeholder="Price (e.g. $399)" />
+              <input id="destOrder" type="number" placeholder="Display Order" />
+            </div>
+            <label style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+              <input id="destActive" type="checkbox" checked />
+              <span>Active</span>
+            </label>
+            <div class="toolbar">
+              <div class="btn-group" style="margin-top:0">
+                <button id="createDest">✨ Create Destination</button>
+                <button id="updateDest" class="btn-secondary">✏️ Update Selected</button>
+                <button id="deleteDest" class="btn-danger">🗑️ Delete Selected</button>
+              </div>
+            </div>
+            <div id="destsList" style="margin-top: 16px;"></div>
           </div>
         </div>
       </div>
 
-
-      <!-- Crazy Deals -->
-      <div class="card" id="section-crazy-deals">
-        <h3 class="section-toggle" onclick="toggleSection('crazyDealsSection')">
-          <span>🔥 Crazy Deals</span>
+      <!-- Testimonials Management (moved to bottom and open by default) -->
+      <div class="card" id="section-testimonials">
+        <h3 class="section-toggle" onclick="toggleSection('testimonialsSection')">
+          <span>⭐ Testimonials</span>
         </h3>
-        <div id="crazyDealsSection" class="section-content collapsed">
-          <input id="dealTitle" placeholder="Title (e.g. Santorini)" />
-          <input id="dealSubtitle" placeholder="Subtitle (e.g. Limited seats • Book now)" style="margin-top: 12px;" />
-          <div class="row" style="margin-top: 12px;">
-            <input id="dealDiscount" type="number" placeholder="Discount % (e.g. 40)" />
-            <input id="dealEndDate" type="datetime-local" placeholder="End Date" />
-          </div>
-          <label style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
-            <input id="dealActive" type="checkbox" checked />
-            <span>Active</span>
-          </label>
-          <div class="btn-group">
-            <button id="createDeal">✨ Create Deal</button>
-            <button id="updateDeal" class="btn-secondary">✏️ Update Selected</button>
-            <button id="deleteDeal" class="btn-danger">🗑️ Delete Selected</button>
-            <button id="refreshDeals" class="btn-secondary">🔄 Refresh</button>
-          </div>
-          <div id="dealsList" style="margin-top: 16px;"></div>
-        </div>
-      </div>
-
-      <!-- Affordable Destinations -->
-      <div class="card" id="section-destinations">
-        <h3 class="section-toggle" onclick="toggleSection('destinationsSection')">
-          <span>🌍 Affordable Destinations</span>
-        </h3>
-        <div id="destinationsSection" class="section-content collapsed">
+        <div id="testimonialsSection" class="section-content">
           <div class="toolbar">
             <div style="flex:1; min-width: 200px;">
               <label>Search</label>
-              <input id="destSearch" placeholder="Search by country or city..." oninput="fetchDestinations()" />
+              <input id="testimonialSearch" placeholder="Search by name, email, text..." oninput="fetchTestimonials()" />
             </div>
-            <div style="width: 180px;">
+            <div style="width: 200px;">
               <label>Status</label>
-              <select id="destStatusFilter" style="margin-top:4px;" onchange="fetchDestinations()">
+              <select id="testimonialStatusFilter" style="margin-top: 4px;" onchange="fetchTestimonials()">
                 <option value="">All</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
               </select>
             </div>
-            <div class="btn-group" style="margin-top:0">
-              <button id="refreshDests" class="btn-secondary">🔄 Refresh</button>
+            <div class="btn-group" style="margin-top: 0;">
+              <button id="refreshTestimonials" class="btn-secondary">🔄 Refresh</button>
             </div>
           </div>
-          <div class="row">
-            <input id="destCountry" placeholder="Country" />
-            <input id="destCity" placeholder="City" />
-          </div>
-          <div class="row" style="margin-top: 12px;">
-            <input id="destPrice" placeholder="Price (e.g. $399)" />
-            <input id="destOrder" type="number" placeholder="Display Order" />
-          </div>
-          <label style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
-            <input id="destActive" type="checkbox" checked />
-            <span>Active</span>
-          </label>
-          <div class="toolbar">
-            <div class="btn-group" style="margin-top:0">
-              <button id="createDest">✨ Create Destination</button>
-              <button id="updateDest" class="btn-secondary">✏️ Update Selected</button>
-              <button id="deleteDest" class="btn-danger">🗑️ Delete Selected</button>
+          <div id="testimonialsList" style="max-height: 500px; overflow-y: auto; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 12px; min-height: 100px;">
+            <div class="empty-state">
+              <div class="spinner"></div>
+              <p style="margin-top: 12px;">Loading testimonials...</p>
             </div>
           </div>
-          <div id="destsList" style="margin-top: 16px;"></div>
+          <div id="testimonialDetails" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; display: none; border: 1px solid rgba(15, 183, 164, 0.2);">
+            <h4 style="margin-top: 0; margin-bottom: 16px; color: #0FB7A4; font-size: 16px;">Testimonial Details</h4>
+            <div id="testimonialDetailsContent"></div>
+            <div style="margin-top: 16px;">
+              <label>Status</label>
+              <select id="testimonialStatusUpdate" style="margin-top: 4px;">
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div style="margin-top: 12px;">
+              <label>Admin Notes</label>
+              <textarea id="testimonialAdminNotes" rows="3" style="margin-top: 4px;" placeholder="Add notes about this testimonial..."></textarea>
+            </div>
+            <div class="btn-group" style="margin-top: 16px;">
+              <button id="updateTestimonialStatus">💾 Update Status</button>
+              <button id="approveTestimonial" style="background: #10b981; color: white;">✅ Approve</button>
+              <button id="rejectTestimonial" style="background: #ef4444; color: white;">❌ Reject</button>
+              <button id="deleteTestimonial" class="btn-danger">🗑️ Delete</button>
+              <button class="btn-secondary" id="cancelTestimonialEdit" onclick="document.getElementById('testimonialDetails').style.display='none'">Cancel</button>
+              <button id="refreshTestimonialsBottom" class="btn-secondary">🔄 Refresh</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1400,7 +1357,15 @@
       // Toggle section collapse
       function toggleSection(sectionId) {
         const section = $(sectionId)
+        if (!section) {
+          console.error('Section not found:', sectionId)
+          return
+        }
         const toggle = section.previousElementSibling
+        if (!toggle) {
+          console.error('Toggle element not found for section:', sectionId)
+          return
+        }
         section.classList.toggle('collapsed')
         toggle.classList.toggle('collapsed')
       }
@@ -1520,6 +1485,12 @@
         $('pkgNights').value = p.nights||''
         $('pkgPrice').value = p.price||''
         $('pkgTripDetails').value = p.trip_details||''
+        // Set inclusions checkboxes
+        const inclusions = p.inclusions || { flights: true, hotel: true, meal: false, vehicle: false }
+        $('pkgIncludesFlights').checked = inclusions.flights || false
+        $('pkgIncludesHotel').checked = inclusions.hotel !== false // Default to true
+        $('pkgIncludesMeal').checked = inclusions.meal || false
+        $('pkgIncludesVehicle').checked = inclusions.vehicle || false
         packageImageFiles = []
         $('pkgImages').value = ''
         updateImagePreview()
@@ -1630,12 +1601,18 @@
         if(uploadedUrls.length === 0) {
           return alert('Failed to upload images')
         }
-        const body = { 
+        const body = {
           code: $('pkgCode').value, 
           title: $('pkgTitle').value, 
           nights: parseInt($('pkgNights').value||0), 
           price: $('pkgPrice').value,
           trip_details: $('pkgTripDetails').value || null,
+          inclusions: {
+            flights: $('pkgIncludesFlights').checked,
+            hotel: $('pkgIncludesHotel').checked,
+            meal: $('pkgIncludesMeal').checked,
+            vehicle: $('pkgIncludesVehicle').checked
+          },
           images: uploadedUrls,
           img: uploadedUrls[0]
         }
@@ -1649,6 +1626,10 @@
           $('pkgNights').value = ''
           $('pkgPrice').value = ''
           $('pkgTripDetails').value = ''
+          $('pkgIncludesFlights').checked = false
+          $('pkgIncludesHotel').checked = true
+          $('pkgIncludesMeal').checked = false
+          $('pkgIncludesVehicle').checked = false
           updateImagePreview()
           fetchPackages() 
         } else {
@@ -1684,6 +1665,12 @@
           nights: parseInt($('pkgNights').value||0), 
           price: $('pkgPrice').value,
           trip_details: $('pkgTripDetails').value || null,
+          inclusions: {
+            flights: $('pkgIncludesFlights').checked,
+            hotel: $('pkgIncludesHotel').checked,
+            meal: $('pkgIncludesMeal').checked,
+            vehicle: $('pkgIncludesVehicle').checked
+          },
           images: uniqueImages,
           img: uniqueImages[0] || ''
         }
@@ -1713,6 +1700,10 @@
           $('pkgNights').value = ''
           $('pkgPrice').value = ''
           $('pkgTripDetails').value = ''
+          $('pkgIncludesFlights').checked = false
+          $('pkgIncludesHotel').checked = true
+          $('pkgIncludesMeal').checked = false
+          $('pkgIncludesVehicle').checked = false
           fetchPackages() 
         } else {
           alert('❌ Error deleting package')
@@ -1945,6 +1936,8 @@
       }
 
       $('refreshDests').onclick = fetchDests
+      // Make function globally accessible as fetchDestinations
+      window.fetchDestinations = fetchDests
 
       // Travel Trips Management
       let selectedTripId = null
@@ -2354,129 +2347,25 @@
 
       $('refreshDeals').onclick = fetchCalendarDeals
 
-      // Live Chat Management
-      let currentChatSessionId = null
-
-      async function fetchChatSessions() {
-        try {
-          const res = await fetch(apiUrl('/api/chat/messages'), { headers: headers() })
-          if (!res.ok) throw new Error('Failed to fetch messages')
-          const allMessages = await res.json()
-          
-          const sessionsMap = new Map()
-          allMessages.forEach(msg => {
-            if (!sessionsMap.has(msg.session_id)) {
-              sessionsMap.set(msg.session_id, {
-                sessionId: msg.session_id,
-                lastMessage: msg.created_at,
-                unreadCount: 0,
-                senderName: msg.sender_name || 'Anonymous'
-              })
-            }
-            const session = sessionsMap.get(msg.session_id)
-            if (new Date(msg.created_at) > new Date(session.lastMessage)) {
-              session.lastMessage = msg.created_at
-            }
-            if (msg.is_admin === false && !msg.read_at) {
-              session.unreadCount++
-            }
-          })
-          
-          const sessions = Array.from(sessionsMap.values()).sort((a, b) => 
-            new Date(b.lastMessage) - new Date(a.lastMessage)
-          )
-          
-          const select = $('chatSessionSelect')
-          select.innerHTML = '<option value="">-- Select a session --</option>'
-          sessions.forEach(s => {
-            const option = document.createElement('option')
-            option.value = s.sessionId
-            const unreadBadge = s.unreadCount > 0 ? ` (${s.unreadCount} unread)` : ''
-            option.textContent = `${s.senderName}${unreadBadge} - ${new Date(s.lastMessage).toLocaleString()}`
-            select.appendChild(option)
-          })
-          updateStats()
-        } catch (err) {
-          console.error('Failed to fetch chat sessions:', err)
-          $('chatSessionSelect').innerHTML = '<option value="">Error loading sessions</option>'
-        }
-      }
-
-      window.loadChatSession = function() {
-        const sessionId = $('chatSessionSelect').value
-        if (!sessionId) {
-          $('chatMessagesList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><h4>No session selected</h4><p>Select a chat session from the dropdown above</p></div>'
-          currentChatSessionId = null
-          return
-        }
-        
-        currentChatSessionId = sessionId
-        fetch(apiUrl(`/api/chat/messages?sessionId=${sessionId}`), { headers: headers() })
-          .then(r => r.json())
-          .then(messages => {
-            if (messages.length === 0) {
-              $('chatMessagesList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><h4>No messages</h4><p>Start the conversation</p></div>'
-              return
-            }
-            $('chatMessagesList').innerHTML = messages.map(msg => `
-              <div style="margin-bottom:12px;padding:12px;background:rgba(255,255,255,${msg.is_admin ? '0.03' : '0.06'});border-radius:8px;border-left:4px solid ${msg.is_admin ? '#0FB7A4' : '#94a3b8'}">
-                <div style="font-weight:600;color:${msg.is_admin ? '#0FB7A4' : '#e6eef6'};font-size:13px;margin-bottom:6px">
-                  ${msg.is_admin ? '👤 Admin' : '👤 ' + (msg.sender_name || 'User')}
-                </div>
-                <div style="margin-top:6px;color:#e6eef6;line-height:1.5">${msg.message}</div>
-                <div style="font-size:11px;color:#64748b;margin-top:8px">
-                  ${new Date(msg.created_at).toLocaleString()}
-                </div>
-              </div>
-            `).join('')
-            const list = $('chatMessagesList')
-            list.scrollTop = list.scrollHeight
-          })
-          .catch(err => {
-            $('chatMessagesList').innerHTML = `<div class="empty-state" style="color: #ef4444;"><h4>Error</h4><p>${err.message}</p></div>`
-          })
-      }
-
-      $('sendAdminReply').onclick = async () => {
-        if (!currentChatSessionId) return alert('Select a chat session first')
-        const message = $('adminReplyMessage').value.trim()
-        if (!message) return alert('Enter a message')
-        try {
-          const res = await fetch(apiUrl(`/api/chat/admin-reply`), {
-            method: 'POST',
-            headers: headers(),
-            body: JSON.stringify({ sessionId: currentChatSessionId, message })
-          })
-          if (!res.ok) {
-            const err = await res.json()
-            throw new Error(err.error || 'Failed to send reply')
-          }
-          $('adminReplyMessage').value = ''
-          loadChatSession()
-          fetchChatSessions()
-        } catch (err) {
-          alert('❌ Error: ' + err.message)
-        }
-      }
-
-      $('refreshChatSessions').onclick = () => {
-        fetchChatSessions()
-        if (currentChatSessionId) {
-          loadChatSession()
-        }
-      }
-
-      setInterval(() => {
-        if (document.visibilityState === 'visible') {
-          fetchChatSessions()
-          if (currentChatSessionId) {
-            loadChatSession()
-          }
-        }
-      }, 10000)
-
       // Requests Management
       let selectedRequestId = null
+
+      function formatInlineFields(text) {
+        if (!text) return ''
+        // Match "Label: value" pairs; stop at next label or end
+        const matches = [...text.matchAll(/([A-Za-z][\w\s'_-]{1,60}):\s*([^:]+?)(?=(?:\s+[A-Za-z][\w\s'_-]{1,60}:)|$)/g)]
+        if (!matches.length) {
+          return `<div style="white-space:pre-wrap;">${text}</div>`
+        }
+        return matches.map(m => {
+          const label = (m[1] || '').replace(/_/g, ' ')
+          const value = (m[2] || '').trim()
+          return `<div style="margin-bottom:8px;">
+            <div style="color:#94a3b8;text-transform:capitalize;">${label}:</div>
+            <div style="color:#e6eef6;white-space:pre-wrap;">${value}</div>
+          </div>`
+        }).join('')
+      }
 
       async function fetchRequests() {
         try {
@@ -2508,7 +2397,7 @@
             return
           }
           
-          list.innerHTML = requests.map(r => {
+          list.innerHTML = requests.map((r, idx) => {
             const user = r.user_id ? usersMap.get(r.user_id) : null
             const userName = user ? user.name : (r.request_data?.name || 'Guest')
             const userEmail = user ? user.email : (r.request_data?.email || 'N/A')
@@ -2517,15 +2406,30 @@
             return `
               <div class="list-item ${selectedRequestId === r.id ? 'selected' : ''}" onclick="selectRequest(${r.id})" style="cursor:pointer;">
                 <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
-                  <strong style="color:#e6eef6;font-size:15px">${r.title}</strong>
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span style="background:rgba(15,183,164,0.15);color:#22d3ee;font-weight:700;font-size:12px;padding:4px 8px;border-radius:999px;">#${idx + 1}</span>
+                    <strong style="color:#e6eef6;font-size:15px">${r.title}</strong>
+                  </div>
                   <span class="status-badge ${statusClass}">
                     ${r.status.replace('_', ' ').toUpperCase()}
                   </span>
                 </div>
-                <div style="font-size:12px;color:#94a3b8;margin-bottom:6px">
-                  ${r.request_type.replace('_', ' ').toUpperCase()} • ${userName} (${userEmail}) • ${new Date(r.created_at).toLocaleDateString()}
+                <div style="font-size:12px;color:#94a3b8;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                  <span>${r.request_type.replace('_', ' ').toUpperCase()}</span>
+                  <span style="color:#e2e8f0;">•</span>
+                  <span>${userName} (${userEmail})</span>
+                  ${r.created_at ? `<span style="color:#e2e8f0;">•</span><span style="color:#cbd5e1;">${new Date(r.created_at).toLocaleString()}</span>` : ''}
                 </div>
-                ${r.description ? `<div style="font-size:13px;color:#cfe6ff;margin-top:6px;line-height:1.4">${r.description}</div>` : ''}
+                ${r.request_data && Object.keys(r.request_data).length > 0 ? `
+                  <div style="margin-top:6px;font-size:12px;color:#cfe6ff;line-height:1.5;display:flex;flex-direction:column;gap:4px;">
+                    ${Object.entries(r.request_data).map(([key, value]) => `
+                      <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap;">
+                        <span style="color:#94a3b8;text-transform:capitalize;">${key.replace(/_/g, ' ')}:</span>
+                        <span style="color:#e6eef6;white-space:pre-wrap;">${(value ?? '').toString()}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : (r.description ? `<div style="font-size:12px;color:#cfe6ff;margin-top:6px;line-height:1.5;display:flex;flex-direction:column;gap:4px;">${formatInlineFields(r.description)}</div>` : '')}
               </div>
             `
           }).join('')
@@ -2565,13 +2469,20 @@
             ${request.description ? `
               <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
                 <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Description:</strong>
-                <div style="color:#e6eef6;margin-top:6px;line-height:1.5">${request.description}</div>
+                <div style="color:#e6eef6;margin-top:6px;line-height:1.5;display:flex;flex-direction:column;gap:4px;">${formatInlineFields(request.description)}</div>
               </div>
             ` : ''}
             ${request.request_data && Object.keys(request.request_data).length > 0 ? `
               <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)">
                 <strong style="color:#0FB7A4;display:block;margin-bottom:4px">Request Data:</strong>
-                <pre style="background:rgba(255,255,255,0.05);padding:12px;border-radius:6px;margin-top:6px;overflow-x:auto;font-size:11px;color:#cfe6ff;line-height:1.4">${JSON.stringify(request.request_data, null, 2)}</pre>
+                <div style="background:rgba(255,255,255,0.05);padding:12px;border-radius:6px;margin-top:6px;font-size:12px;color:#cfe6ff;line-height:1.6;display:flex;flex-direction:column;gap:6px;">
+                  ${Object.entries(request.request_data).map(([key, value]) => `
+                    <div>
+                      <span style="color:#94a3b8;text-transform:capitalize;">${key.replace(/_/g, ' ')}:</span>
+                      <div style="white-space:pre-wrap;color:#e6eef6;margin-top:2px;">${(value ?? '').toString()}</div>
+                    </div>
+                  `).join('')}
+                </div>
               </div>
             ` : ''}
             ${request.admin_notes ? `
@@ -2586,7 +2497,7 @@
                 <span style="color:#e6eef6;text-transform:capitalize">${request.payment_status.replace('_', ' ')}</span>
                 ${request.payment_info && request.payment_info.amount ? `
                   <div style="margin-top:6px;color:#e6eef6">
-                    Amount: ${request.payment_info.currency || 'USD'} ${request.payment_info.amount}
+                    Amount: ${request.payment_info.amount}
                   </div>
                 ` : ''}
                 ${request.payment_confirmed_at ? `
@@ -2605,13 +2516,7 @@
           const paymentInfo = request.payment_info || {}
           $('requestPaymentStatus').value = request.payment_status || 'pending'
           $('paymentAmount').value = paymentInfo.amount || ''
-          $('paymentCurrency').value = paymentInfo.currency || 'USD'
           $('paymentMethod').value = paymentInfo.payment_method || 'bank_transfer'
-          $('paymentBankName').value = paymentInfo.bank_name || ''
-          $('paymentAccountName').value = paymentInfo.account_name || ''
-          $('paymentAccountNumber').value = paymentInfo.account_number || ''
-          $('paymentInstructions').value = paymentInfo.instructions || ''
-          $('paymentDueDate').value = paymentInfo.due_date ? paymentInfo.due_date.split('T')[0] : ''
           
           $('requestDetails').style.display = 'block'
         } catch (err) {
@@ -3202,20 +3107,21 @@
       fetchDeals()
       fetchDests()
       fetchTrips()
-      fetchChatSessions()
+      fetchUsers()
       fetchCalendarDeals()
       fetchRequests()
       fetchTestimonials()
+      fetchDests()
       fetchUsers()
 
       // Chat Sidebar Functions
-      let chatSidebarCollapsed = false
-      let chatActiveTab = 'chat'
-      let chatMessages = []
-      let chatConversations = []
-      let chatUnreadCount = 0
-      let selectedChatSessionId = null
-      let usersMap = new Map() // Map user_id to user object
+      var chatSidebarCollapsed = false
+      var chatActiveTab = 'chat'
+      var chatMessages = []
+      var chatConversations = []
+      var chatUnreadCount = 0
+      var selectedChatSessionId = null
+      var usersMap = new Map() // Map user_id to user object
       const QUICK_REPLIES = [
         "Hello! How can I help you today?",
         "Thanks for reaching out!",
@@ -3265,26 +3171,27 @@
           // If no sessionId provided, use the selected one
           const targetSessionId = sessionId || selectedChatSessionId
           
-          // Build URL with session filter if we have a sessionId
-          let url = apiUrl('/api/chat/messages')
-          if (targetSessionId) {
-            url += `?sessionId=${encodeURIComponent(targetSessionId)}`
+          if (!targetSessionId) {
+            $('chatMessages').innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px 20px;">Select a conversation to view messages</div>'
+            return
           }
           
-          const res = await fetch(url, { headers: headers() })
+          // Fetch messages for this specific session
+          const res = await fetch(apiUrl(`/api/chat/messages?sessionId=${encodeURIComponent(targetSessionId)}`), { 
+            headers: headers() 
+          })
+          
           if (res.ok) {
-            const messages = await res.json()
-            // Filter messages by sessionId if provided
-            if (targetSessionId) {
-              chatMessages = messages.filter(msg => msg.session_id === targetSessionId)
-            } else {
-              chatMessages = messages
-            }
+            chatMessages = await res.json()
             renderChatMessages()
             updateUnreadCount()
+          } else {
+            console.error('Failed to load messages:', res.status)
+            $('chatMessages').innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px 20px;">Failed to load messages</div>'
           }
         } catch (err) {
           console.error('Failed to load chat messages:', err)
+          $('chatMessages').innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px 20px;">Error loading messages</div>'
         }
       }
 
@@ -3325,6 +3232,9 @@
 
       async function loadUsers() {
         try {
+          if (!usersMap) {
+            usersMap = new Map()
+          }
           const res = await fetch(apiUrl('/api/users'), { headers: headers() })
           if (res.ok) {
             const users = await res.json()
@@ -3403,51 +3313,45 @@
           // Load users first to map user_ids to names
           await loadUsers()
           
-          const res = await fetch(apiUrl('/api/chat/messages'), { headers: headers() })
-          if (res.ok) {
-            const messages = await res.json()
-            // Group by session
-            const sessions = {}
-            messages.forEach(msg => {
-              const sid = msg.session_id || 'default'
-              if (!sessions[sid]) {
-                sessions[sid] = {
-                  sessionId: sid,
-                  messages: [],
-                  lastMessage: null,
-                  unread: 0,
-                  userId: null
-                }
-              }
-              sessions[sid].messages.push(msg)
-              if (!sessions[sid].lastMessage || new Date(msg.created_at) > new Date(sessions[sid].lastMessage.created_at)) {
-                sessions[sid].lastMessage = msg
-              }
-              // Extract user_id from session or message
-              if (!sessions[sid].userId && msg.user_id) {
-                sessions[sid].userId = msg.user_id
-              } else if (!sessions[sid].userId) {
-                const match = sid.match(/^user_(\d+)/)
-                if (match) {
-                  sessions[sid].userId = parseInt(match[1])
-                }
-              }
-              if (msg.is_admin && !msg.read_at) {
-                sessions[sid].unread++
-              }
-            })
-            
-            chatConversations = Object.values(sessions).sort((a, b) => {
-              // Sort by last message time (most recent first)
-              if (!a.lastMessage && !b.lastMessage) return 0
-              if (!a.lastMessage) return 1
-              if (!b.lastMessage) return -1
-              return new Date(b.lastMessage.created_at) - new Date(a.lastMessage.created_at)
-            })
-            renderChatConversations()
+          // Use the new sessions endpoint
+          const res = await fetch(apiUrl('/api/chat/sessions'), { headers: headers() })
+          
+          if (!res.ok) {
+            const errorText = await res.text()
+            console.error('Failed to fetch chat sessions:', res.status, errorText)
+            $('chatConversationsList').innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px 20px;">Error loading conversations: ${res.status}</div>`
+            return
+          }
+          
+          const sessions = await res.json()
+          console.log('Loaded chat sessions:', sessions.length)
+          
+          // Convert to format expected by render function
+          chatConversations = sessions.map(session => ({
+            sessionId: session.sessionId,
+            lastMessage: session.lastMessage,
+            unread: session.unreadCount || 0,
+            userId: session.userId
+          }))
+          
+          // Auto-select most recent if none selected
+          if (!selectedChatSessionId && chatConversations.length > 0) {
+            selectedChatSessionId = chatConversations[0].sessionId
+          }
+          // Clear selection if no conversations
+          if (chatConversations.length === 0) {
+            selectedChatSessionId = null
+          }
+          
+          renderChatConversations()
+          
+          // If we're on chat tab, ensure messages load for selected
+          if (chatActiveTab === 'chat' && selectedChatSessionId) {
+            loadChatMessages(selectedChatSessionId)
           }
         } catch (err) {
           console.error('Failed to load conversations:', err)
+          $('chatConversationsList').innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px 20px;">Error: ${err.message}</div>`
         }
       }
 
@@ -3461,8 +3365,9 @@
         container.innerHTML = chatConversations.map(conv => {
           const userName = getUserNameFromSession(conv.sessionId)
           const lastMessageTime = conv.lastMessage ? formatLastMessageTime(conv.lastMessage.created_at) : ''
+          const isActive = conv.sessionId === selectedChatSessionId
           return `
-          <div class="chat-conversation-item" onclick="selectChatConversation('${conv.sessionId}')">
+          <div class="chat-conversation-item ${isActive ? 'active' : ''}" onclick="selectChatConversation('${conv.sessionId}')">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span style="font-size: 13px; font-weight: 600; color: #e6eef6;">${userName}</span>
               <div style="display: flex; align-items: center; gap: 6px;">
@@ -3478,6 +3383,7 @@
       function selectChatConversation(sessionId) {
         // Store selected session and load messages for this session
         selectedChatSessionId = sessionId
+        renderChatConversations()
         loadChatMessages(sessionId)
         switchChatTab('chat')
       }
@@ -3504,12 +3410,18 @@
               sessionId: selectedChatSessionId,
               senderName: 'Admin',
               message: message,
-              is_admin: true
+              isAdmin: true
             })
           })
           
           if (res.ok) {
-            loadChatMessages(selectedChatSessionId)
+            // Reload messages and conversations
+            await loadChatMessages(selectedChatSessionId)
+            await loadChatConversations()
+          } else {
+            const error = await res.text()
+            console.error('Failed to send message:', error)
+            alert('Failed to send message')
           }
         } catch (err) {
           console.error('Failed to send message:', err)
@@ -3524,14 +3436,13 @@
         `).join('')
       }
 
-      function updateUnreadCount() {
-        // Count unread messages across all conversations (not just selected session)
-        // We need to reload all messages to get accurate unread count
-        fetch(apiUrl('/api/chat/messages'), { headers: headers() })
-          .then(res => res.json())
-          .then(allMessages => {
-            // Count unread admin messages (messages from users that admin hasn't read)
-            chatUnreadCount = allMessages.filter(msg => !msg.is_admin && !msg.read_at).length
+      async function updateUnreadCount() {
+        try {
+          // Use the sessions endpoint to get unread counts
+          const res = await fetch(apiUrl('/api/chat/sessions'), { headers: headers() })
+          if (res.ok) {
+            const sessions = await res.json()
+            chatUnreadCount = sessions.reduce((total, session) => total + (session.unreadCount || 0), 0)
             
             // Update badges
             if (chatUnreadCount > 0) {
@@ -3549,8 +3460,10 @@
               $('chatTabBadge').style.display = 'none'
               $('chatUnreadCollapsed').style.display = 'none'
             }
-          })
-          .catch(err => console.error('Failed to update unread count:', err))
+          }
+        } catch (err) {
+          console.error('Failed to update unread count:', err)
+        }
       }
 
       // Initialize chat sidebar

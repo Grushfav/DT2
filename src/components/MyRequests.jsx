@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000'
 
 export default function MyRequests({ onClose, onViewPayment }) {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all') // all, pending, in_progress, on_hold, completed
@@ -19,13 +19,12 @@ export default function MyRequests({ onClose, onViewPayment }) {
   const fetchRequests = async () => {
     try {
       setLoading(true)
-      const token = localStorage.getItem('token')
       const params = new URLSearchParams()
       if (filter !== 'all') params.append('status', filter)
 
       const response = await fetch(`${API_BASE}/api/requests?${params}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         }
       })
       

@@ -18,7 +18,7 @@ export default function Hero({ onPrimaryClick = () => {} }) {
         </motion.p>
 
         <motion.div whileHover={{ y: -6 }} className="mt-8 flex items-center justify-center">
-          <button onClick={onPrimaryClick} className="bg-teal hover:bg-teal-dark text-navy font-semibold px-6 py-3 rounded-full shadow-lg">Start Your Booking</button>
+          <button onClick={onPrimaryClick} className="bg-teal hover:bg-teal-dark active:bg-teal-dark text-navy font-semibold px-6 py-3 md:px-8 md:py-4 rounded-full shadow-lg text-base md:text-lg min-h-[44px] touch-manipulation">Start Your Booking</button>
         </motion.div>
       </div>
     </section>

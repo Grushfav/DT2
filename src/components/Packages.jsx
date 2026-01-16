@@ -10,6 +10,26 @@ const FALLBACK = [
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000'
 
+// Format inclusions for display
+function formatInclusions(inclusions) {
+  if (!inclusions || typeof inclusions !== 'object') {
+    return 'Flights + Hotel' // Default fallback
+  }
+  
+  const parts = []
+  if (inclusions.flights) parts.push('Flights')
+  if (inclusions.hotel) parts.push('Hotel')
+  if (inclusions.meal) parts.push('Meal')
+  if (inclusions.vehicle) parts.push('Vehicle')
+  
+  if (parts.length === 0) {
+    return 'Custom Package'
+  }
+  
+  // Format: "Flights + Hotel" or "Flights + Hotel + Meal + Vehicle"
+  return parts.join(' + ')
+}
+
 export default function Packages({ onViewDetails = () => {}, onRequest = () => {} }) {
   const { user, token } = useAuth()
   const [items, setItems] = useState(FALLBACK)
@@ -179,7 +199,7 @@ function Card({ item, onView = () => {}, onRequest = () => {}, setToast = () => 
       </div>
       <div className="p-5">
         <h4 className="font-semibold text-lg text-slate-800 mb-2 line-clamp-1">{item.title}</h4>
-        <p className="text-sm text-slate-600 mb-4">{item.nights} Nights | Flights + Hotel — from <span className="font-semibold text-teal">{item.price}</span></p>
+        <p className="text-xs md:text-sm text-slate-600 mb-4 leading-relaxed">{item.nights} Nights | {formatInclusions(item.inclusions)} — from <span className="font-semibold text-teal">{item.price}</span></p>
         <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
           <button 
             onClick={onView} 
@@ -199,7 +219,7 @@ function RequestButton({ onRequest, user }) {
   return (
     <button 
       onClick={onRequest} 
-      className="bg-teal hover:bg-teal-dark text-white text-xs font-semibold px-4 py-1.5 rounded-md transition-colors"
+      className="bg-teal hover:bg-teal-dark active:bg-teal-dark text-white text-xs md:text-sm font-semibold px-4 py-2 md:px-6 md:py-2.5 rounded-md transition-colors min-h-[44px] touch-manipulation"
     >
       {user ? 'Request' : 'Request'}
     </button>

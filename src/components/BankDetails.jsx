@@ -67,7 +67,7 @@ export default function BankDetails({ open, onClose }) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+          className="bank-details-modal bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-teal to-teal-dark text-white p-6 rounded-t-xl">
@@ -105,12 +105,20 @@ export default function BankDetails({ open, onClose }) {
                 {bankDetails.map((bank, index) => (
                   <div
                     key={bank.id || index}
-                    className="bg-gradient-to-br from-slate-50 to-white border-2 border-teal/20 rounded-xl p-6 shadow-lg"
+                    className="rounded-xl p-6 shadow-lg"
+                    style={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e2e8f0',
+                      backgroundImage: 'linear-gradient(to bottom right, #f8fafc, #ffffff)'
+                    }}
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-bold text-white">{bank.bank_name}</h3>
+                      <h3 className="text-xl font-bold" style={{ color: '#0f172a', fontWeight: '700' }}>{bank.bank_name}</h3>
                       {bank.currency && (
-                        <span className="px-3 py-1 bg-teal/10 text-teal rounded-full text-sm font-semibold">
+                        <span
+                          className="px-3 py-1 rounded-full text-sm font-semibold"
+                          style={{ backgroundColor: '#ecfeff', color: '#0f172a', border: '1px solid #bae6fd' }}
+                        >
                           {bank.currency}
                         </span>
                       )}
@@ -118,12 +126,15 @@ export default function BankDetails({ open, onClose }) {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Account Name */}
-                      <div className="bg-white rounded-lg p-4 border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1 block">
+                      <div
+                        className="rounded-lg p-4"
+                        style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
+                      >
+                        <label className="text-xs font-bold uppercase tracking-wide mb-2 block" style={{ color: '#000000', fontWeight: '800', letterSpacing: '0.05em' }}>
                           Account Name
                         </label>
                         <div className="flex items-center justify-between">
-                          <p className="text-lg font-semibold text-white">{bank.account_name}</p>
+                          <p className="text-lg font-semibold" style={{ color: '#0f172a', fontWeight: '700' }}>{bank.account_name}</p>
                           <button
                             onClick={() => copyToClipboard(bank.account_name)}
                             className="ml-2 text-teal hover:text-teal-dark text-sm"
@@ -135,12 +146,15 @@ export default function BankDetails({ open, onClose }) {
                       </div>
 
                       {/* Account Number */}
-                      <div className="bg-white rounded-lg p-4 border border-slate-200">
-                        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1 block">
+                      <div
+                        className="rounded-lg p-4"
+                        style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
+                      >
+                        <label className="text-xs font-bold uppercase tracking-wide mb-2 block" style={{ color: '#000000', fontWeight: '800', letterSpacing: '0.05em' }}>
                           Account Number
                         </label>
                         <div className="flex items-center justify-between">
-                          <p className="text-lg font-mono font-semibold text-white">{bank.account_number}</p>
+                          <p className="text-lg font-mono font-semibold" style={{ color: '#0f172a', fontWeight: '700' }}>{bank.account_number}</p>
                           <button
                             onClick={() => copyToClipboard(bank.account_number)}
                             className="ml-2 text-teal hover:text-teal-dark text-sm"
@@ -153,12 +167,15 @@ export default function BankDetails({ open, onClose }) {
 
                       {/* Routing Number */}
                       {bank.routing_number && (
-                        <div className="bg-white rounded-lg p-4 border border-slate-200">
-                          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1 block">
+                        <div
+                          className="rounded-lg p-4"
+                          style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
+                        >
+                          <label className="text-xs font-bold uppercase tracking-wide mb-2 block" style={{ color: '#000000', fontWeight: '800', letterSpacing: '0.05em' }}>
                             Routing Number
                           </label>
                           <div className="flex items-center justify-between">
-                            <p className="text-lg font-mono font-semibold text-white">{bank.routing_number}</p>
+                            <p className="text-lg font-mono font-semibold" style={{ color: '#0f172a', fontWeight: '700' }}>{bank.routing_number}</p>
                             <button
                               onClick={() => copyToClipboard(bank.routing_number)}
                               className="ml-2 text-teal hover:text-teal-dark text-sm"
@@ -172,12 +189,15 @@ export default function BankDetails({ open, onClose }) {
 
                       {/* SWIFT Code */}
                       {bank.swift_code && (
-                        <div className="bg-white rounded-lg p-4 border border-slate-200">
-                          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1 block">
+                        <div
+                          className="rounded-lg p-4"
+                          style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
+                        >
+                          <label className="text-xs font-bold uppercase tracking-wide mb-2 block" style={{ color: '#000000', fontWeight: '800', letterSpacing: '0.05em' }}>
                             SWIFT Code
                           </label>
                           <div className="flex items-center justify-between">
-                            <p className="text-lg font-mono font-semibold text-white">{bank.swift_code}</p>
+                            <p className="text-lg font-mono font-semibold" style={{ color: '#0f172a', fontWeight: '700' }}>{bank.swift_code}</p>
                             <button
                               onClick={() => copyToClipboard(bank.swift_code)}
                               className="ml-2 text-teal hover:text-teal-dark text-sm"
@@ -191,36 +211,58 @@ export default function BankDetails({ open, onClose }) {
 
                       {/* Branch Name */}
                       {bank.branch_name && (
-                        <div className="bg-white rounded-lg p-4 border border-slate-200">
-                          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1 block">
+                        <div
+                          className="rounded-lg p-4"
+                          style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
+                        >
+                          <label className="text-xs font-bold uppercase tracking-wide mb-2 block" style={{ color: '#000000', fontWeight: '800', letterSpacing: '0.05em' }}>
                             Branch Name
                           </label>
-                          <p className="text-lg font-semibold text-white">{bank.branch_name}</p>
+                          <p className="text-lg font-semibold" style={{ color: '#0f172a', fontWeight: '700' }}>{bank.branch_name}</p>
                         </div>
                       )}
 
                       {/* Branch Address */}
                       {bank.branch_address && (
-                        <div className="bg-white rounded-lg p-4 border border-slate-200 md:col-span-2">
-                          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1 block">
+                        <div
+                          className="rounded-lg p-4 md:col-span-2"
+                          style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
+                        >
+                          <label className="text-xs font-bold uppercase tracking-wide mb-2 block" style={{ color: '#000000', fontWeight: '800', letterSpacing: '0.05em' }}>
                             Branch Address
                           </label>
-                          <p className="text-slate-300">{bank.branch_address}</p>
+                          <p className="text-gray-700" style={{ color: '#0f172a', fontWeight: '500' }}>{bank.branch_address}</p>
                         </div>
                       )}
                     </div>
 
                     {/* Instructions */}
                     {bank.instructions && (
-                      <div className="mt-4 bg-teal/5 border border-teal/20 rounded-lg p-4">
-                        <label className="text-xs font-semibold text-teal uppercase tracking-wide mb-2 block">
+                      <div className="mt-4 rounded-lg p-4" style={{ backgroundColor: '#ecfdf5', border: '1px solid #10b981' }}>
+                        <label className="text-xs font-semibold uppercase tracking-wide mb-2 block" style={{ color: '#059669' }}>
                           ⚠️ Important Instructions
                         </label>
-                        <p className="text-slate-300 whitespace-pre-wrap">{bank.instructions}</p>
+                        <p className="whitespace-pre-wrap" style={{ color: '#065f46', fontWeight: '600' }}>{bank.instructions}</p>
                       </div>
                     )}
                   </div>
                 ))}
+
+                {/* Other Payment Methods */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-5">
+                  <h3 className="text-lg font-bold text-purple-900 mb-3">💳 Other Payment Methods</h3>
+                  <p className="text-sm text-purple-800 mb-2">
+                    We also accept payments via:
+                  </p>
+                  <ul className="list-disc list-inside text-sm text-purple-800 space-y-1 mb-3">
+                    <li>PayPal</li>
+                    <li>Cash App</li>
+                    <li>Zelle</li>
+                  </ul>
+                  <p className="text-sm text-purple-700 italic">
+                    Please contact us for more details on these payment methods.
+                  </p>
+                </div>
 
                 {/* Footer Note */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
